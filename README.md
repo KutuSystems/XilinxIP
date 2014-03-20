@@ -10,3 +10,14 @@ The reason for adding this repository i that I noticed that ADI are working on m
 
 These IP blocks all build into a Kutu IP library.
 
+The current repository builds without errors, but is untested.
+
+To build the library  do the following:
+1. Open Vivado (currently 2013.4)
+2. cd <your dir>/XilinxIP
+3. source build_ip_lib.tcl
+
+After the script runs you will have the projects all built and the IP generated.
+
+regards,
+Greg
