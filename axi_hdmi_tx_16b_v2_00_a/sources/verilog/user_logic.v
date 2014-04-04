@@ -49,8 +49,6 @@ module user_logic (
   vdma_clk,
   vdma_fs,
   vdma_fs_ret,
-  vdma_empty,
-  vdma_almost_empty,
   vdma_valid,
   vdma_data,
   vdma_be,
@@ -86,8 +84,6 @@ module user_logic (
   input           vdma_clk;
   output          vdma_fs;
   input           vdma_fs_ret;
-  input           vdma_empty;
-  input           vdma_almost_empty;
   input           vdma_valid;
   input   [63:0]  vdma_data;
   input   [ 7:0]  vdma_be;

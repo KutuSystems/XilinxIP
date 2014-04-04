@@ -38,8 +38,6 @@ entity axi_hdmi_tx_16b is
     vdma_clk                : in  std_logic;
     vdma_fs                 : out std_logic;
     vdma_fs_ret             : in  std_logic;
-    vdma_empty              : in  std_logic;
-    vdma_almost_empty       : in  std_logic;
     up_status               : out std_logic_vector(7 downto 0);
     debug_trigger           : out std_logic_vector(7 downto 0);
     debug_data              : out std_logic_vector(63 downto 0);
@@ -189,8 +187,6 @@ architecture IMP of axi_hdmi_tx_16b is
       vdma_clk              : in  std_logic;
       vdma_fs               : out std_logic;
       vdma_fs_ret           : in  std_logic;
-      vdma_empty            : in  std_logic;
-      vdma_almost_empty     : in  std_logic;
       vdma_valid            : in  std_logic;
       vdma_data             : in  std_logic_vector(63 downto 0);
       vdma_be               : in  std_logic_vector(7 downto 0);
@@ -279,8 +275,6 @@ begin
       vdma_clk              => vdma_clk,
       vdma_fs               => vdma_fs,
       vdma_fs_ret           => vdma_fs_ret,
-      vdma_empty            => vdma_empty,
-      vdma_almost_empty     => vdma_almost_empty,
       vdma_valid            => M_AXIS_MM2S_TVALID,
       vdma_data             => M_AXIS_MM2S_TDATA,
       vdma_be               => M_AXIS_MM2S_TKEEP,
