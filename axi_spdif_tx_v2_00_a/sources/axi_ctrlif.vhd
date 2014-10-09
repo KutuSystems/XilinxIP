@@ -99,7 +99,7 @@ begin
 				when IDLE =>
 					if S_AXI_ARVALID = '1' then
 						rd_state <= RESP;
-						rd_addr <= to_integer(unsigned(S_AXI_ARADDR(31 downto 2)));
+						rd_addr <= to_integer(unsigned(S_AXI_ARADDR((C_S_AXI_ADDR_WIDTH-1) downto 2)));
 					end if;
 				when RESP =>
 					if rd_stb = '1' and S_AXI_RREADY = '1' then
@@ -141,7 +141,7 @@ begin
 
 	wr_stb <= '1' when S_AXI_AWVALID = '1' and S_AXI_WVALID = '1' and wr_state = IDLE else '0';
 	wr_data <= S_AXI_WDATA;
-	wr_addr <= to_integer(unsigned(S_AXI_AWADDR(31 downto 2)));
+	wr_addr <= to_integer(unsigned(S_AXI_AWADDR((C_S_AXI_ADDR_WIDTH-1) downto 2)));
 
 	S_AXI_AWREADY <= '1' when wr_state = ACK else '0';
 	S_AXI_WREADY <= '1' when wr_state = ACK else '0';

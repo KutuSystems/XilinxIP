@@ -15,27 +15,79 @@
 #   run results please launch the synthesis/implementation runs as needed.
 #
 #*****************************************************************************************
-# NOTE: In order to use this script for source control purposes, please make sure that the
-#       following files are added to the source control system:-
-#
-# 1. This project restoration tcl script (build_ip.tcl) that was generated.
-#
-# 2. The following source(s) files that were local or imported into the original project.
-#    (Please see the '$orig_proj_dir' variable setting below at the start of the script)
-#
-#    "C:/kutu/svn/kutu_data/XilinxIP/axi_spdif_tx_v2_00_a/axi_spdif_tx_v2_00_a.srcs/sources_1/dma_fifo.vhd"
-#    "C:/kutu/svn/kutu_data/XilinxIP/axi_spdif_tx_v2_00_a/axi_spdif_tx_v2_00_a.srcs/sources_1/tx_package.vhd"
-#    "C:/kutu/svn/kutu_data/XilinxIP/axi_spdif_tx_v2_00_a/axi_spdif_tx_v2_00_a.srcs/sources_1/tx_encoder.vhd"
-#    "C:/kutu/svn/kutu_data/XilinxIP/axi_spdif_tx_v2_00_a/axi_spdif_tx_v2_00_a.srcs/sources_1/pl330_dma_fifo.vhd"
-#    "C:/kutu/svn/kutu_data/XilinxIP/axi_spdif_tx_v2_00_a/axi_spdif_tx_v2_00_a.srcs/sources_1/axi_ctrlif.vhd"
-#    "C:/kutu/svn/Hawk/trunk/XilinxIP/axi_spdif_tx_v2_00_a/sources/axi_spdif_tx.vhd"
-#    "C:/kutu/svn/Hawk/trunk/XilinxIP/axi_spdif_tx_v2_00_a/component.xml"
-#
-# 3. The following remote source files that were added to the original project:-
-#
-#    <none>
-#
-#*****************************************************************************************
+
+proc adi_add_bus {bus_name bus_type mode port_maps} {
+	set bus [ipx::add_bus_interface $bus_name [ipx::current_core]]
+	if { $bus_type == "axis" } {
+		set abst_type "axis_rtl"
+	} elseif { $bus_type == "aximm" } {
+		set abst_type "aximm_rtl"
+	} else {
+		set abst_type $bus_type
+	}
+
+	set_property "ABSTRACTION_TYPE_LIBRARY" "interface" $bus
+	set_property "ABSTRACTION_TYPE_NAME" $abst_type $bus
+	set_property "ABSTRACTION_TYPE_VENDOR" "xilinx.com" $bus
+	set_property "ABSTRACTION_TYPE_VERSION" "1.0" $bus
+	set_property "BUS_TYPE_LIBRARY" "interface" $bus
+	set_property "BUS_TYPE_NAME" $bus_type $bus
+	set_property "BUS_TYPE_VENDOR" "xilinx.com" $bus
+	set_property "BUS_TYPE_VERSION" "1.0" $bus
+	set_property "CLASS" "bus_interface" $bus
+	set_property "INTERFACE_MODE" $mode $bus
+
+	foreach port_map $port_maps {
+		adi_add_port_map $bus {*}$port_map
+	}
+}
+
+proc adi_add_bus_clock {clock_signal_name bus_inf_name {reset_signal_name ""}} {
+	set bus_inf_name_clean [string map {":" "_"} $bus_inf_name]
+	set clock_inf_name [format "%s%s" $bus_inf_name_clean "_signal_clock"]
+	set clock_inf [ipx::add_bus_interface $clock_inf_name [ipx::current_core]]
+	set_property abstraction_type_vlnv "xilinx.com:signal:clock_rtl:1.0" $clock_inf
+	set_property bus_type_vlnv "xilinx.com:signal:clock:1.0" $clock_inf
+	set_property display_name $clock_inf_name $clock_inf
+	set clock_map [ipx::add_port_map "CLK" $clock_inf]
+	set_property physical_name $clock_signal_name $clock_map
+
+	set assoc_busif [ipx::add_bus_parameter "ASSOCIATED_BUSIF" $clock_inf]
+	set_property value $bus_inf_name $assoc_busif
+
+	if { $reset_signal_name != "" } {
+		set assoc_reset [ipx::add_bus_parameter "ASSOCIATED_RESET" $clock_inf]
+		set_property value $reset_signal_name $assoc_reset
+
+		set reset_inf_name [format "%s%s" $bus_inf_name_clean "_signal_reset"]
+		set reset_inf [ipx::add_bus_interface $reset_inf_name [ipx::current_core]]
+		set_property abstraction_type_vlnv "xilinx.com:signal:reset_rtl:1.0" $reset_inf
+		set_property bus_type_vlnv "xilinx.com:signal:reset:1.0" $reset_inf
+		set_property display_name $reset_inf_name $reset_inf
+		set reset_map [ipx::add_port_map "RST" $reset_inf]
+		set_property physical_name $reset_signal_name $reset_map
+
+		set reset_polarity [ipx::add_bus_parameter "POLARITY" $reset_inf]
+		set_property value "ACTIVE_LOW" $reset_polarity
+	}
+}
+
+proc adi_set_ports_dependency {port_prefix dependency} {
+	foreach port [ipx::get_ports [format "%s%s" $port_prefix "*"]] {
+		set_property ENABLEMENT_DEPENDENCY $dependency $port
+	}
+}
+
+proc adi_set_bus_dependency {bus prefix dependency} {
+	set_property ENABLEMENT_DEPENDENCY $dependency [ipx::get_bus_interface $bus [ipx::current_core]]
+	adi_set_ports_dependency $prefix $dependency
+}
+
+proc adi_add_port_map {bus phys logic} {
+	set map [ipx::add_port_map $phys $bus]
+	set_property "PHYSICAL_NAME" $phys $map
+	set_property "LOGICAL_NAME" $logic $map
+}
 
 # Set the original project directory path for adding/importing sources in the new project
 set orig_proj_dir "../axi_spdif_tx_v2_00_a"
@@ -58,42 +110,13 @@ if {[string equal [get_filesets sources_1] ""]} {
 }
 
 # Add files to 'sources' fileset
-set obj [get_filesets sources_1]
-set files [list \
- "[file normalize "$orig_proj_dir/sources/dma_fifo.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/tx_package.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/tx_encoder.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/pl330_dma_fifo.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/axi_ctrlif.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/axi_spdif_tx.vhd"]"
-]
-add_files -norecurse -fileset $obj $files
-
-# Set 'sources' fileset file properties for local files
-set file "sources/dma_fifo.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/tx_package.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/tx_encoder.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/pl330_dma_fifo.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/axi_ctrlif.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/axi_spdif_tx.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
+add_files -norecurse sources/dma_fifo.vhd
+add_files -norecurse sources/tx_package.vhd
+add_files -norecurse sources/tx_encoder.vhd
+add_files -norecurse sources/pl330_dma_fifo.vhd
+add_files -norecurse sources/axi_ctrlif.vhd
+add_files -norecurse sources/axi_spdif_tx.vhd
+add_files -norecurse sources/axi_streaming_dma_tx_fifo.vhd
 
 # Set 'sources_1' fileset properties
 set obj [get_filesets sources_1]
@@ -138,11 +161,54 @@ if {[string equal [get_runs impl_1] ""]} {
 set obj [get_runs impl_1]
 
 ipx::package_project -root_dir {../axi_spdif_tx_v2_00_a}
+
 set_property vendor {kutu.com.au} [ipx::current_core]
 set_property library {kutu} [ipx::current_core]
 set_property taxonomy {{/Kutu}} [ipx::current_core]
 set_property vendor_display_name {Kutu Pty. Ltd.} [ipx::current_core]
 set_property company_url {www.kutu.com.au} [ipx::current_core]
+
+set_property supported_families \
+    {{virtex7}    {Production} \
+     {qvirtex7}   {Production} \
+     {kintex7}    {Production} \
+     {kintex7l}   {Production} \
+     {qkintex7}   {Production} \
+     {qkintex7l}  {Production} \
+     {artix7}     {Production} \
+     {artix7l}    {Production} \
+     {aartix7}    {Production} \
+     {qartix7}    {Production} \
+     {zynq}       {Production} \
+     {qzynq}      {Production} \
+     {azynq}      {Production}} \
+  [ipx::current_core]
+
+adi_add_bus "DMA_ACK" "axis" "slave" \
+	[list {"DMA_REQ_DAVALID" "TVALID"} \
+		{"DMA_REQ_DAREADY" "TREADY"} \
+		{"DMA_REQ_DATYPE" "TUSER"} ]
+adi_add_bus "DMA_REQ" "axis" "master" \
+	[list {"DMA_REQ_DRVALID" "TVALID"} \
+		{"DMA_REQ_DRREADY" "TREADY"} \
+		{"DMA_REQ_DRTYPE" "TUSER"} \
+		{"DMA_REQ_DRLAST" "TLAST"} ]
+
+# Clock and reset are for both DMA_REQ and DMA_ACK
+adi_add_bus_clock "DMA_REQ_ACLK" "DMA_REQ:DMA_ACK" "DMA_REQ_RSTN"
+
+adi_set_bus_dependency "S_AXIS" "S_AXIS" \
+	"(spirit:decode(id('MODELPARAM_VALUE.C_DMA_TYPE')) = 0)"
+
+adi_set_bus_dependency "DMA_ACK" "DMA_REQ_DA" \
+	"(spirit:decode(id('MODELPARAM_VALUE.C_DMA_TYPE')) = 1)"
+adi_set_bus_dependency "DMA_REQ" "DMA_REQ_DR" \
+	"(spirit:decode(id('MODELPARAM_VALUE.C_DMA_TYPE')) = 1)"
+adi_set_ports_dependency "DMA_REQ_ACLK" \
+	"(spirit:decode(id('MODELPARAM_VALUE.C_DMA_TYPE')) = 1)"
+adi_set_ports_dependency "DMA_REQ_RSTN" \
+	"(spirit:decode(id('MODELPARAM_VALUE.C_DMA_TYPE')) = 1)"
+
 set_property value_validation_range_maximum {32} [ipx::get_user_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]
 set_property value_validation_range_maximum {32} [ipx::get_hdl_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]
 set_property value_validation_range_minimum {1} [ipx::get_user_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]

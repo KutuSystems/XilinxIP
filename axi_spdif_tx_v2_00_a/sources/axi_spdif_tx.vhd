@@ -40,23 +40,20 @@
 
 library ieee;
 use ieee.std_logic_1164.all;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
-use work.tx_package.all;
 
 entity axi_spdif_tx is
    generic (
               C_S_AXI_DATA_WIDTH	: integer		:= 32;
               C_S_AXI_ADDR_WIDTH	: integer		:= 32;
-              C_BASEADDR		: std_logic_vector	:= X"FFFFFFFF";
-              C_HIGHADDR		: std_logic_vector	:= X"00000000"
+              C_FAMILY		: string		:= "virtex7";
+              C_DMA_TYPE		: integer		:= 1
            );
    port (
-                --SPDIF ports
+           --SPDIF ports
            spdif_data_clk	: in  std_logic;
            spdif_tx_o	: out std_logic;
 
-                --AXI Lite interface
+           --AXI Lite interface
            S_AXI_ACLK	: in  std_logic;
            S_AXI_ARESETN	: in  std_logic;
            S_AXI_AWADDR	: in  std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -77,7 +74,15 @@ entity axi_spdif_tx is
            S_AXI_BVALID	: out std_logic;
            S_AXI_AWREADY	: out std_logic;
 
-                --PL330 DMA interface
+           --AXI streaming interface
+           S_AXIS_ACLK	: in  std_logic;
+           S_AXIS_ARESETN	: in  std_logic;
+           S_AXIS_TREADY	: out std_logic;
+           S_AXIS_TDATA	: in  std_logic_vector(31 downto 0);
+           S_AXIS_TLAST	: in  std_logic;
+           S_AXIS_TVALID	: in  std_logic;
+
+           --PL330 DMA interface
            DMA_REQ_ACLK    : in  std_logic;
            DMA_REQ_RSTN    : in  std_logic;
            DMA_REQ_DAVALID : in  std_logic;
@@ -95,83 +100,45 @@ end entity axi_spdif_tx;
 ------------------------------------------------------------------------------
 
 architecture IMP of axi_spdif_tx is
-        ------------------------------------------
-        -- SPDIF signals
-        ------------------------------------------
-   signal config_reg : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-   signal chstatus_reg : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 
-   signal chstat_freq : std_logic_vector(1 downto 0);
-   signal chstat_gstat, chstat_preem, chstat_copy, chstat_audio : std_logic;
-   signal sample_data_ack : std_logic;
-   signal sample_data: std_logic_vector(15 downto 0);
-   signal conf_mode : std_logic_vector(3 downto 0);
-   signal conf_ratio : std_logic_vector(7 downto 0);
-   signal conf_tinten, conf_txdata, conf_txen : std_logic;
-   signal channel : std_logic;
-
-   signal fifo_data_out : std_logic_vector(31 downto 0);
-   signal fifo_reset : std_logic;
-   signal tx_fifo_stb : std_logic;
-
-        -- Register access
-   signal wr_data : std_logic_vector(31 downto 0);
-   signal rd_data : std_logic_vector(31 downto 0);
-   signal wr_addr : integer range 0 to 3;
-   signal rd_addr : integer range 0 to 3;
-   signal wr_stb : std_logic;
-   signal rd_ack : std_logic;
-
-   component pl330_dma_fifo
+   component axi_streaming_dma_tx_fifo
       generic (
                  RAM_ADDR_WIDTH : integer := 3;
-                 FIFO_DWIDTH : integer := 32;
-                 FIFO_DIRECTION : integer := 0 -- 0 = write FIFO, 1 = read FIFO
+                 FIFO_DWIDTH : integer := 32 
               );
       port (
-              clk		: in  std_logic;
-              resetn		: in  std_logic;
-              fifo_reset	: in  std_logic;
+              clk		: in std_logic;
+              resetn		: in std_logic;
+              fifo_reset	: in std_logic;
 
-                -- Enable DMA interface
-              enable		: in  Boolean;
+              -- Enable DMA interface
+              enable		: in Boolean;
 
-                -- Write port
-              in_stb		: in  std_logic;
-              in_ack		: out std_logic;
-              in_data		: in  std_logic_vector(FIFO_DWIDTH-1 downto 0);
+              -- Write port
+              S_AXIS_ACLK	: in std_logic;
+              S_AXIS_TREADY	: out std_logic;
+              S_AXIS_TDATA	: in std_logic_vector(FIFO_DWIDTH-1 downto 0);
+              S_AXIS_TLAST	: in std_logic;
+              S_AXIS_TVALID	: in std_logic;
 
-                -- Read port
-              out_stb		: out std_logic;	
-              out_ack		: in  std_logic;
-              out_data	: out std_logic_vector(FIFO_DWIDTH-1 downto 0);
-
-                -- PL330 DMA interface
-              dclk		: in  std_logic;
-              dresetn		: in  std_logic;
-              davalid		: in  std_logic;
-              daready		: out std_logic;
-              datype		: in  std_logic_vector(1 downto 0);
-              drvalid		: out std_logic;
-              drready		: in  std_logic;
-              drtype		: out std_logic_vector(1 downto 0);
-              drlast		: out std_logic;
-
-              DBG			: out std_logic_vector(7 downto 0)
+              -- Read port
+              out_stb		: out std_logic;
+              out_ack		: in std_logic;
+              out_data	: out std_logic_vector(FIFO_DWIDTH-1 downto 0)
            );
    end component;
 
    component axi_ctrlif
       generic
       (
-         C_NUM_REG	       	: integer			:= 32;
+         C_NUM_REG			: integer			:= 32;
          C_S_AXI_DATA_WIDTH	: integer			:= 32;
          C_S_AXI_ADDR_WIDTH	: integer			:= 32;
          C_FAMILY		: string			:= "virtex6"
       );
       port
       (
-                -- AXI bus interface
+         -- AXI bus interface
          S_AXI_ACLK		: in  std_logic;
          S_AXI_ARESETN		: in  std_logic;
          S_AXI_AWADDR		: in  std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -204,41 +171,187 @@ architecture IMP of axi_spdif_tx is
       );
    end component;
 
+   component pl330_dma_fifo
+      generic (
+                 RAM_ADDR_WIDTH : integer := 3;
+                 FIFO_DWIDTH : integer := 32;
+                 FIFO_DIRECTION : integer := 0 -- 0 = write FIFO, 1 = read FIFO
+              );
+      port (
+              clk		: in  std_logic;
+              resetn		: in  std_logic;
+              fifo_reset	: in  std_logic;
+
+              -- Enable DMA interface
+              enable		: in  Boolean;
+
+              -- Write port
+              in_stb		: in  std_logic;
+              in_ack		: out std_logic;
+              in_data		: in  std_logic_vector(FIFO_DWIDTH-1 downto 0);
+
+              -- Read port
+              out_stb		: out std_logic;	
+              out_ack		: in  std_logic;
+              out_data	: out std_logic_vector(FIFO_DWIDTH-1 downto 0);
+
+              -- PL330 DMA interface
+              dclk		: in  std_logic;
+              dresetn		: in  std_logic;
+              davalid		: in  std_logic;
+              daready		: out std_logic;
+              datype		: in  std_logic_vector(1 downto 0);
+              drvalid		: out std_logic;
+              drready		: in  std_logic;
+              drtype		: out std_logic_vector(1 downto 0);
+              drlast		: out std_logic;
+
+              DBG			: out std_logic_vector(7 downto 0)
+           );
+   end component;
+
+   component dma_fifo
+      generic (
+                 RAM_ADDR_WIDTH : integer := 3;
+                 FIFO_DWIDTH : integer := 32
+              );
+      port (
+              clk		: in  std_logic;
+              resetn		: in  std_logic;
+              fifo_reset	: in  std_logic;
+
+              -- Write port
+              in_stb		: in  std_logic;
+              in_ack		: out std_logic;
+              in_data		: in  std_logic_vector(FIFO_DWIDTH-1 downto 0);
+
+              -- Read port
+              out_stb		: out std_logic;	
+              out_ack		: in  std_logic;
+              out_data	: out std_logic_vector(FIFO_DWIDTH-1 downto 0)
+           );
+   end component;
+
+   component tx_encoder	 
+      generic (DATA_WIDTH: integer range 16 to 32 := 32); 
+      port (
+              up_clk: in std_logic;             -- clock
+              data_clk : in std_logic;          -- data clock
+              resetn : in std_logic;            -- resetn
+              conf_mode: in std_logic_vector(3 downto 0);   -- sample format
+              conf_ratio: in std_logic_vector(7 downto 0);  -- clock divider
+              conf_txdata: in std_logic;          -- sample data enable
+              conf_txen: in std_logic;            -- spdif signal enable
+              chstat_freq: in std_logic_vector(1 downto 0);  -- sample freq.
+              chstat_gstat: in std_logic;         -- generation status
+              chstat_preem: in std_logic;         -- preemphasis status
+              chstat_copy: in std_logic;          -- copyright bit
+              chstat_audio: in  std_logic;        -- data format
+              sample_data: in std_logic_vector(DATA_WIDTH - 1 downto 0);  -- audio data
+              sample_data_ack: out std_logic;              -- sample buffer read
+              channel: out std_logic;
+              spdif_tx_o: out std_logic);
+   end component;
+
+   ------------------------------------------
+   -- SPDIF signals
+   ------------------------------------------
+   signal config_reg : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+   signal chstatus_reg : std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+
+   signal chstat_freq : std_logic_vector(1 downto 0);
+   signal chstat_gstat, chstat_preem, chstat_copy, chstat_audio : std_logic;
+   signal sample_data_ack : std_logic;
+   signal sample_data: std_logic_vector(15 downto 0);
+   signal conf_mode : std_logic_vector(3 downto 0);
+   signal conf_ratio : std_logic_vector(7 downto 0);
+   signal conf_tinten, conf_txdata, conf_txen : std_logic;
+   signal channel : std_logic;
+   signal enable : boolean;
+
+   signal fifo_data_out : std_logic_vector(31 downto 0);
+   signal fifo_data_ack : std_logic;
+   signal fifo_reset : std_logic;
+   signal tx_fifo_stb : std_logic;
+
+   -- Register access
+   signal wr_data : std_logic_vector(31 downto 0);
+   signal rd_data : std_logic_vector(31 downto 0);
+   signal wr_addr : integer range 0 to 3;
+   signal rd_addr : integer range 0 to 3;
+   signal wr_stb : std_logic;
+   signal rd_ack : std_logic;
 begin
 
    fifo_reset <= not conf_txdata;
+   enable <= conf_txdata = '1';
+   fifo_data_ack <= channel and sample_data_ack;
 
+   streaming_dma_gen: if C_DMA_TYPE = 0 generate
+      fifo: axi_streaming_dma_tx_fifo
+      generic map (
+                     RAM_ADDR_WIDTH	=> 3,
+                     FIFO_DWIDTH	=> 32
+                  )
+      port map (
+                  clk		=> S_AXI_ACLK,
+                  resetn		=> S_AXI_ARESETN,
+                  fifo_reset	=> fifo_reset,
+                  enable		=> enable,
+                  S_AXIS_ACLK	=> S_AXIS_ACLK,
+                  S_AXIS_TREADY	=> S_AXIS_TREADY,
+                  S_AXIS_TDATA	=> S_AXIS_TDATA,
+                  S_AXIS_TVALID	=> S_AXIS_TLAST,
+                  S_AXIS_TLAST	=> S_AXIS_TVALID,
 
-   tx_fifo_stb <= '1' when wr_addr = 3 and wr_stb = '1' else '0';
+                  out_ack		=> fifo_data_ack,
+                  out_data	=> fifo_data_out
+               );
+   end generate;
 
-   fifo: pl330_dma_fifo
-   generic map(
-                 RAM_ADDR_WIDTH => 3,
-                 FIFO_DWIDTH => 32,
-                 FIFO_DIRECTION => 0
-              )
-   port map (
-               clk		=> S_AXI_ACLK,
-               resetn		=> S_AXI_ARESETN,
-               fifo_reset	=> fifo_reset,
-               enable		=> conf_txdata = '1',
+   no_streaming_dma_gen: if C_DMA_TYPE /= 0 generate
+      S_AXIS_TREADY <= '0';
+   end generate;
 
-               in_data		=> wr_data,
-               in_stb		=> tx_fifo_stb,
+   pl330_dma_gen: if C_DMA_TYPE = 1 generate
+      tx_fifo_stb <= '1' when wr_addr = 3 and wr_stb = '1' else '0';
 
-               out_ack		=> channel and sample_data_ack,
-               out_data	=> fifo_data_out,
+      fifo: pl330_dma_fifo
+      generic map(
+                    RAM_ADDR_WIDTH => 3,
+                    FIFO_DWIDTH => 32,
+                    FIFO_DIRECTION => 0
+                 )
+      port map (
+                  clk		=> S_AXI_ACLK,
+                  resetn		=> S_AXI_ARESETN,
+                  fifo_reset	=> fifo_reset,
+                  enable		=> enable,
 
-               dclk		=> DMA_REQ_ACLK,
-               dresetn		=> DMA_REQ_RSTN,
-               davalid		=> DMA_REQ_DAVALID,
-               daready		=> DMA_REQ_DAREADY,
-               datype		=> DMA_REQ_DATYPE,
-               drvalid		=> DMA_REQ_DRVALID,
-               drready		=> DMA_REQ_DRREADY,
-               drtype		=> DMA_REQ_DRTYPE,
-               drlast		=> DMA_REQ_DRLAST
-            );
+                  in_data		=> wr_data,
+                  in_stb		=> tx_fifo_stb,
+
+                  out_ack		=> fifo_data_ack,
+                  out_data	=> fifo_data_out,
+
+                  dclk		=> DMA_REQ_ACLK,
+                  dresetn		=> DMA_REQ_RSTN,
+                  davalid		=> DMA_REQ_DAVALID,
+                  daready		=> DMA_REQ_DAREADY,
+                  datype		=> DMA_REQ_DATYPE,
+                  drvalid		=> DMA_REQ_DRVALID,
+                  drready		=> DMA_REQ_DRREADY,
+                  drtype		=> DMA_REQ_DRTYPE,
+                  drlast		=> DMA_REQ_DRLAST
+               );
+   end generate;
+
+   no_pl330_dma_gen: if C_DMA_TYPE /= 1 generate
+      DMA_REQ_DAREADY <= '0';
+      DMA_REQ_DRVALID <= '0';
+      DMA_REQ_DRTYPE <= (others => '0');
+      DMA_REQ_DRLAST <= '0';
+   end generate;
 
    sample_data_mux: process (fifo_data_out, channel) is
    begin
@@ -249,21 +362,21 @@ begin
       end if;
    end process;
 
-        -- Configuration signals update
+   -- Configuration signals update
    conf_mode(3 downto 0)  <= config_reg(23 downto 20);
    conf_ratio(7 downto 0) <= config_reg(15 downto 8);
    conf_tinten <= config_reg(2);
    conf_txdata <= config_reg(1);
    conf_txen   <= config_reg(0);
 
-        -- Channel status signals update
+   -- Channel status signals update
    chstat_freq(1 downto 0) <= chstatus_reg(7 downto 6);
    chstat_gstat <= chstatus_reg(3);
    chstat_preem <= chstatus_reg(2);
    chstat_copy <= chstatus_reg(1);
    chstat_audio <= chstatus_reg(0);
 
-        -- Transmit encoder
+   -- Transmit encoder
    TENC: tx_encoder 	 
    generic map (
                   DATA_WIDTH => 16
@@ -343,7 +456,7 @@ begin
       end if;
    end process;
 
-   process (rd_addr)
+   process (rd_addr, config_reg, chstatus_reg)
    begin
       case rd_addr is
          when 0 => rd_data <= config_reg;

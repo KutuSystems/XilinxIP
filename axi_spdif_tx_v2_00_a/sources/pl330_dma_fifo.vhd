@@ -41,12 +41,7 @@ entity pl330_dma_fifo is
 end;
 
 architecture imp of pl330_dma_fifo is
-   signal request_data		: Boolean;
 
-   type state_type is (IDLE, REQUEST, WAITING, FLUSH);
-   signal state			: state_type;
-   signal i_in_ack			: std_logic;
-   signal i_out_stb			: std_logic;
 
    component dma_fifo
       generic (
@@ -58,24 +53,31 @@ architecture imp of pl330_dma_fifo is
               resetn		: in  std_logic;
               fifo_reset	: in  std_logic;
 
-                -- Write port
+              -- Write port
               in_stb		: in  std_logic;
               in_ack		: out std_logic;
               in_data		: in  std_logic_vector(FIFO_DWIDTH-1 downto 0);
 
-                -- Read port
+              -- Read port
               out_stb		: out std_logic;	
               out_ack		: in  std_logic;
               out_data	: out std_logic_vector(FIFO_DWIDTH-1 downto 0)
            );
    end component;
 
+
+   signal request_data		: Boolean;
+
+   type state_type is (IDLE, REQUEST, WAITING, FLUSH);
+   signal state			: state_type;
+   signal i_in_ack			: std_logic;
+   signal i_out_stb			: std_logic;
 begin
 
    in_ack <= i_in_ack;
    out_stb <= i_out_stb;
 
-   fifo_1: dma_fifo
+   fifo: dma_fifo
    generic map (
                   RAM_ADDR_WIDTH => RAM_ADDR_WIDTH,
                   FIFO_DWIDTH => FIFO_DWIDTH
