@@ -37,101 +37,24 @@ if {[string equal [get_filesets sources_1] ""]} {
 }
 
 # Add files to 'sources' fileset
-set obj [get_filesets sources_1]
-set files [list \
- "[file normalize "$orig_proj_dir/sources/vhdl/address_decoder.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/axi_hdmi_tx_16b.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/axi_lite_ipif.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/family_support.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/ipif_pkg.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/pselect_f.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/slave_attachment.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/proc_common_pkg.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/cf_add.v"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/cf_csc_1.v"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/cf_csc_RGB2CrYCb.v"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/cf_hdmi.v"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/cf_hdmi_tx_16b.v"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/cf_mem.v"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/cf_mul.v"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/cf_ss_444to422.v"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/cf_vdma.v"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/user_logic.v"]"
-]
-add_files -norecurse -fileset $obj $files
-
-# Set 'sources' fileset file properties for local files
-set file "sources/vhdl/address_decoder.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/axi_hdmi_tx_16b.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/axi_lite_ipif.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/family_support.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/ipif_pkg.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/pselect_f.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/slave_attachment.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/proc_common_pkg.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/verilog/cf_add.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
-
-set file "sources/verilog/cf_csc_1.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
-
-set file "sources/verilog/cf_csc_RGB2CrYCb.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
-
-set file "sources/verilog/cf_hdmi.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
-
-set file "sources/verilog/cf_hdmi_tx_16b.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
-
-set file "sources/verilog/cf_mem.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
-
-set file "sources/verilog/cf_mul.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
-
-set file "sources/verilog/cf_ss_444to422.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
-
-set file "sources/verilog/cf_vdma.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
-
-set file "sources/verilog/user_logic.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
+ add_files -norecurse sources/vhdl/address_decoder.vhd
+ add_files -norecurse sources/vhdl/axi_hdmi_tx_16b.vhd
+ add_files -norecurse sources/vhdl/axi_lite_ipif.vhd
+ add_files -norecurse sources/vhdl/family_support.vhd
+ add_files -norecurse sources/vhdl/ipif_pkg.vhd
+ add_files -norecurse sources/vhdl/pselect_f.vhd
+ add_files -norecurse sources/vhdl/slave_attachment.vhd
+ add_files -norecurse sources/vhdl/proc_common_pkg.vhd
+ add_files -norecurse sources/verilog/cf_add.v
+ add_files -norecurse sources/verilog/cf_csc_1.v
+ add_files -norecurse sources/verilog/cf_csc_RGB2CrYCb.v
+ add_files -norecurse sources/verilog/cf_hdmi.v
+ add_files -norecurse sources/verilog/cf_hdmi_tx_16b.v
+ add_files -norecurse sources/verilog/cf_mem.v
+ add_files -norecurse sources/verilog/cf_mul.v
+ add_files -norecurse sources/verilog/cf_ss_444to422.v
+ add_files -norecurse sources/verilog/cf_vdma.v
+ add_files -norecurse sources/verilog/user_logic.v
 
 # Set 'sources_1' fileset properties
 set obj [get_filesets sources_1]

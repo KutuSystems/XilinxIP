@@ -37,61 +37,16 @@ if {[string equal [get_filesets sources_1] ""]} {
 }
 
 # Add files to 'sources' fileset
-set obj [get_filesets sources_1]
-set files [list \
- "[file normalize "$orig_proj_dir/sources/vhdl/axi_clkgen.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/address_decoder.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/axi_lite_ipif.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/family_support.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/ipif_pkg.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/pselect_f.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/slave_attachment.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/vhdl/proc_common_pkg.vhd"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/cf_clkgen.v"]"\
- "[file normalize "$orig_proj_dir/sources/verilog/user_logic2.v"]"
-]
-add_files -norecurse -fileset $obj $files
-
-# Set 'sources' fileset file properties for local files
-set file "sources/vhdl/address_decoder.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/axi_clkgen.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/axi_lite_ipif.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/family_support.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/ipif_pkg.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/pselect_f.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/slave_attachment.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/vhdl/proc_common_pkg.vhd"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "VHDL" $file_obj
-
-set file "sources/verilog/cf_clkgen.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
-
-set file "sources/verilog/user_logic2.v"
-set file_obj [get_files -of_objects sources_1 [list "*$file"]]
-set_property "file_type" "Verilog" $file_obj
+add_files -norecurse sources/vhdl/axi_clkgen.vhd
+add_files -norecurse sources/vhdl/address_decoder.vhd
+add_files -norecurse sources/vhdl/axi_lite_ipif.vhd
+add_files -norecurse sources/vhdl/family_support.vhd
+add_files -norecurse sources/vhdl/ipif_pkg.vhd
+add_files -norecurse sources/vhdl/pselect_f.vhd
+add_files -norecurse sources/vhdl/slave_attachment.vhd
+add_files -norecurse sources/vhdl/proc_common_pkg.vhd
+add_files -norecurse sources/verilog/cf_clkgen.v
+add_files -norecurse sources/verilog/user_logic2.v
 
 # Set 'sources_1' fileset properties
 set obj [get_filesets sources_1]
@@ -177,7 +132,8 @@ set_property value_validation_range_maximum {32} [ipx::get_user_parameter C_S_AX
 set_property value_validation_range_maximum {32} [ipx::get_hdl_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
 set_property value_validation_range_minimum {1} [ipx::get_user_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
 set_property value_validation_range_minimum {1} [ipx::get_hdl_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
-set_property interface_mode {master} [ipx::get_bus_interface signal_clock [ipx::current_core]]
+ipx::remove_bus_interface {signal_clock} [ipx::current_core]
+set_property range {65536} [ipx::get_address_block reg0 [ipx::get_memory_map S_AXI [ipx::current_core]]]
 ipx::create_xgui_files [ipx::current_core]
 ipx::save_core [ipx::current_core]
 update_ip_catalog -rebuild -repo_path ../../XilinxIP
