@@ -100,7 +100,7 @@ set proj_dir [get_property directory [current_project]]
 
 # Set project properties
 set obj [get_projects axi_spdif_tx_v2_00_a]
-set_property "part" "xc7z010clg400-1" $obj
+set_property "board" "xilinx.com:zynq:zc706:1.1" $obj
 set_property "simulator_language" "Mixed" $obj
 set_property "target_language" "VHDL" $obj
 
@@ -209,14 +209,15 @@ adi_set_ports_dependency "DMA_REQ_ACLK" \
 adi_set_ports_dependency "DMA_REQ_RSTN" \
 	"(spirit:decode(id('MODELPARAM_VALUE.C_DMA_TYPE')) = 1)"
 
-ipx::add_bus_parameter ASSOCIATED_BUSIF [ipx::get_bus_interfaces DMA_REQ_signal_clock -of_objects [ipx::current_core]]
-set_property value DMA_REQ [ipx::get_bus_parameters ASSOCIATED_BUSIF -of_objects [ipx::get_bus_interfaces DMA_REQ_signal_clock -of_objects [ipx::current_core]]]
-ipx::remove_bus_interface {spdif_data_signal_clock} [ipx::current_core]
+#ipx::add_bus_parameter ASSOCIATED_BUSIF [ipx::get_bus_interfaces DMA_REQ_DMA_ACK_signal_clock -of_objects [ipx::current_core]]
+set_property value DMA_REQ:DMA_ACK [ipx::get_bus_parameters ASSOCIATED_BUSIF -of_objects [ipx::get_bus_interfaces DMA_REQ_DMA_ACK_signal_clock -of_objects [ipx::current_core]]]
+ipx::remove_bus_interface DMA_REQ_ACLK [ipx::current_core]
+ipx::remove_bus_interface spdif_data_clk [ipx::current_core]
         
 ipx::create_xgui_files [ipx::current_core]
 ipx::save_core [ipx::current_core]
 #update_ip_catalog -rebuild -repo_path ../../XilinxIP
 ipx::check_integrity -quiet [ipx::current_core]
-ipx::unload_core {kutu.com.au:kutu:axi_spdif_tx:1.0}
+#ipx::unload_core {kutu.com.au:kutu:axi_spdif_tx:1.0}
 
 puts "INFO: Project created:axi_spdif_tx_v2_00_a"
