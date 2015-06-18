@@ -10,7 +10,7 @@ set proj_dir [get_property directory [current_project]]
 
 # Set project properties
 set obj [get_projects axi_lite_controller_v1_00_a]
-set_property "board" "xilinx.com:zynq:zc706:1.1" $obj
+set_property "part" "xc7z010clg400-1" $obj
 set_property "simulator_language" "Mixed" $obj
 set_property "target_language" "VHDL" $obj
 
@@ -70,48 +70,12 @@ set_property library {kutu} [ipx::current_core]
 set_property taxonomy {{/Kutu}} [ipx::current_core]
 set_property vendor_display_name {Kutu Pty. Ltd.} [ipx::current_core]
 set_property company_url {www.kutu.com.au} [ipx::current_core]
-set_property value_validation_range_maximum {16} [ipx::get_user_parameter C_DPHASE_TIMEOUT [ipx::current_core]]
-set_property value_validation_range_maximum {16} [ipx::get_hdl_parameter C_DPHASE_TIMEOUT [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_user_parameter C_DPHASE_TIMEOUT [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_hdl_parameter C_DPHASE_TIMEOUT [ipx::current_core]]
-set_property value_validation_range_maximum {1} [ipx::get_user_parameter C_USE_WSTRB [ipx::current_core]]
-set_property value_validation_range_maximum {1} [ipx::get_hdl_parameter C_USE_WSTRB [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_user_parameter C_USE_WSTRB [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_hdl_parameter C_USE_WSTRB [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_user_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_hdl_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_user_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_hdl_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {32} [ipx::get_user_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {32} [ipx::get_hdl_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {32} [ipx::get_user_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {32} [ipx::get_hdl_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {24} [ipx::get_user_parameter C_SYS_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {24} [ipx::get_hdl_parameter C_SYS_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {8} [ipx::get_user_parameter C_SYS_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {8} [ipx::get_hdl_parameter C_SYS_ADDR_WIDTH [ipx::current_core]]
-ipx::add_bus_interface {S_AXI_LITE_ACLK} [ipx::current_core]
-set_property abstraction_type_vlnv {xilinx.com:signal:clock_rtl:1.0} [ipx::get_bus_interface S_AXI_LITE_ACLK [ipx::current_core]]
-set_property bus_type_vlnv {xilinx.com:signal:clock:1.0} [ipx::get_bus_interface S_AXI_LITE_ACLK [ipx::current_core]]
-set_property display_name {S_AXI_LITE_ACLK} [ipx::get_bus_interface S_AXI_LITE_ACLK [ipx::current_core]]
-ipx::infer_port_maps [ipx::get_bus_interface S_AXI_LITE_ACLK [ipx::current_core]]
-ipx::add_port_map {CLK} [ipx::get_bus_interface S_AXI_LITE_ACLK [ipx::current_core]]
-ipx::add_bus_interface {S_AXI_LITE_ARESETN} [ipx::current_core]
-set_property abstraction_type_vlnv {xilinx.com:signal:reset_rtl:1.0} [ipx::get_bus_interface S_AXI_LITE_ARESETN [ipx::current_core]]
-set_property bus_type_vlnv {xilinx.com:signal:reset:1.0} [ipx::get_bus_interface S_AXI_LITE_ARESETN [ipx::current_core]]
-set_property display_name {S_AXI_LITE_ARESETN} [ipx::get_bus_interface S_AXI_LITE_ARESETN [ipx::current_core]]
-ipx::infer_port_maps [ipx::get_bus_interface S_AXI_LITE_ARESETN [ipx::current_core]]
-ipx::add_bus_parameter {ASSOCIATED_BUSIF} [ipx::get_bus_interface S_AXI_LITE_ACLK [ipx::current_core]]
-set_property value {S_AXI_LITE} [ipx::get_bus_parameter ASSOCIATED_BUSIF [ipx::get_bus_interface S_AXI_LITE_ACLK [ipx::current_core]]]
-ipx::add_bus_parameter {POLARITY} [ipx::get_bus_interface S_AXI_LITE_ARESETN [ipx::current_core]]
-set_property value {ACTIVE_LOW} [ipx::get_bus_parameter POLARITY [ipx::get_bus_interface S_AXI_LITE_ARESETN [ipx::current_core]]]
+ipx::remove_bus_interface {sys_signal_clock} [ipx::current_core]
 
 ipx::create_xgui_files [ipx::current_core]
-ipx::infer_port_maps [ipx::get_bus_interface S_AXI_LITE_ACLK [ipx::current_core]]
-set_property physical_name {S_AXI_LITE_ACLK} [ipx::get_port_map CLK [ipx::get_bus_interface S_AXI_LITE_ACLK [ipx::current_core]]]
 ipx::create_xgui_files [ipx::current_core]
 ipx::save_core [ipx::current_core]
-update_ip_catalog -rebuild -repo_path ../../XilinxIP
+#update_ip_catalog -rebuild -repo_path ../../XilinxIP
 ipx::check_integrity -quiet [ipx::current_core]
 ipx::unload_core {kutu.com.au:kutu:axi4_lite_controller:1.0}
 

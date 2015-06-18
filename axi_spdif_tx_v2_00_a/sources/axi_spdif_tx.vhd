@@ -44,7 +44,7 @@ use ieee.std_logic_1164.all;
 entity axi_spdif_tx is
    generic (
               C_S_AXI_DATA_WIDTH	: integer		:= 32;
-              C_S_AXI_ADDR_WIDTH	: integer		:= 32;
+              C_S_AXI_ADDR_WIDTH	: integer		:= 16;
               C_FAMILY		: string		:= "virtex7";
               C_DMA_TYPE		: integer		:= 1
            );

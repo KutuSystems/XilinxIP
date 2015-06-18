@@ -19,7 +19,7 @@ entity axi_clkgen is
   generic
   (
     C_S_AXI_DATA_WIDTH    : integer := 32;
-    C_S_AXI_ADDR_WIDTH    : integer := 32;
+    C_S_AXI_ADDR_WIDTH    : integer := 16;
     C_S_AXI_MIN_SIZE      : std_logic_vector := X"000001FF";
     C_USE_WSTRB           : integer := 0;
     C_DPHASE_TIMEOUT      : integer := 8;

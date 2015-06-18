@@ -27,7 +27,9 @@ set proj_dir [get_property directory [current_project]]
 
 # Set project properties
 set obj [get_projects axi_clkgen_v2_00_a]
-set_property "board" "xilinx.com:zynq:zc706:1.1" $obj
+
+
+set_property "part" "xc7z010clg400-1" $obj
 set_property "simulator_language" "Mixed" $obj
 set_property "target_language" "VHDL" $obj
 
@@ -96,47 +98,29 @@ set_property library {kutu} [ipx::current_core]
 set_property taxonomy {{/Kutu}} [ipx::current_core]
 set_property vendor_display_name {Kutu Pty. Ltd.} [ipx::current_core]
 set_property company_url {www.kutu.com.au} [ipx::current_core]
-set_property value_validation_range_maximum {1} [ipx::get_user_parameter C_MMCM_TYPE [ipx::current_core]]
-set_property value_validation_range_maximum {1} [ipx::get_hdl_parameter C_MMCM_TYPE [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_user_parameter C_MMCM_TYPE [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_hdl_parameter C_MMCM_TYPE [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_user_parameter C_SLV_DWIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_hdl_parameter C_SLV_DWIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {1} [ipx::get_user_parameter C_SLV_DWIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {1} [ipx::get_hdl_parameter C_SLV_DWIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_user_parameter C_SLV_AWIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_hdl_parameter C_SLV_AWIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {1} [ipx::get_user_parameter C_SLV_AWIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {1} [ipx::get_hdl_parameter C_SLV_AWIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {1} [ipx::get_user_parameter C_NUM_MEM [ipx::current_core]]
-set_property value_validation_range_maximum {1} [ipx::get_hdl_parameter C_NUM_MEM [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_user_parameter C_NUM_MEM [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_hdl_parameter C_NUM_MEM [ipx::current_core]]
-set_property value_validation_range_maximum {1} [ipx::get_user_parameter C_NUM_REG [ipx::current_core]]
-set_property value_validation_range_maximum {1} [ipx::get_hdl_parameter C_NUM_REG [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_user_parameter C_NUM_REG [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_hdl_parameter C_NUM_REG [ipx::current_core]]
-set_property value_validation_range_maximum {8} [ipx::get_user_parameter C_DPHASE_TIMEOUT [ipx::current_core]]
-set_property value_validation_range_maximum {8} [ipx::get_hdl_parameter C_DPHASE_TIMEOUT [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_user_parameter C_DPHASE_TIMEOUT [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_hdl_parameter C_DPHASE_TIMEOUT [ipx::current_core]]
-set_property value_validation_range_maximum {1} [ipx::get_user_parameter C_USE_WSTRB [ipx::current_core]]
-set_property value_validation_range_maximum {1} [ipx::get_hdl_parameter C_USE_WSTRB [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_user_parameter C_USE_WSTRB [ipx::current_core]]
-set_property value_validation_range_minimum {0} [ipx::get_hdl_parameter C_USE_WSTRB [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_user_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_hdl_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {1} [ipx::get_user_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {1} [ipx::get_hdl_parameter C_S_AXI_ADDR_WIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_user_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
-set_property value_validation_range_maximum {32} [ipx::get_hdl_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {1} [ipx::get_user_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
-set_property value_validation_range_minimum {1} [ipx::get_hdl_parameter C_S_AXI_DATA_WIDTH [ipx::current_core]]
+ipx::remove_bus_interface {ref_signal_clock} [ipx::current_core]
 ipx::remove_bus_interface {signal_clock} [ipx::current_core]
-set_property range {65536} [ipx::get_address_block reg0 [ipx::get_memory_map S_AXI [ipx::current_core]]]
+# set_property range {65536} [ipx::get_address_block reg0 [ipx::get_memory_map S_AXI [ipx::current_core]]]
+#
+set_property supported_families \
+    {{virtex7}    {Production} \
+     {qvirtex7}   {Production} \
+     {kintex7}    {Production} \
+     {kintex7l}   {Production} \
+     {qkintex7}   {Production} \
+     {qkintex7l}  {Production} \
+     {artix7}     {Production} \
+     {artix7l}    {Production} \
+     {aartix7}    {Production} \
+     {qartix7}    {Production} \
+     {zynq}       {Production} \
+     {qzynq}      {Production} \
+     {azynq}      {Production}} \
+  [ipx::current_core]
+#
 ipx::create_xgui_files [ipx::current_core]
 ipx::save_core [ipx::current_core]
-update_ip_catalog -rebuild -repo_path ../../XilinxIP
+# update_ip_catalog -rebuild -repo_path ../../XilinxIP
 ipx::check_integrity -quiet [ipx::current_core]
 ipx::unload_core {kutu.com.au:kutu:axi_clkgen:1.0}
 
