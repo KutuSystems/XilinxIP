@@ -1,5 +1,0 @@
-# compile vhdl design source files
-vhdl xil_defaultlib  "../../../sources/axi4_lite_controller.vhd"
-vhdl xil_defaultlib  "../../../sources/axi_sim_pkg.vhd"
-vhdl xil_defaultlib  "../../../sources/axi4_lite_test.vhd"
-vhdl xil_defaultlib  "../../../sources/axi4_lite_tb1.vhd"

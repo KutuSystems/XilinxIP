@@ -46,6 +46,7 @@ module up_xfer_cntrl (
   up_rstn,
   up_clk,
   up_data_cntrl,
+  up_xfer_done,
 
   // device interface
 
@@ -63,6 +64,7 @@ module up_xfer_cntrl (
   input           up_rstn;
   input           up_clk;
   input   [DW:0]  up_data_cntrl;
+  output          up_xfer_done;
 
   // device interface
 
@@ -72,28 +74,44 @@ module up_xfer_cntrl (
 
   // internal registers
 
+  reg             up_xfer_state_m1 = 'd0;
+  reg             up_xfer_state_m2 = 'd0;
+  reg             up_xfer_state = 'd0;
   reg     [ 5:0]  up_xfer_count = 'd0;
+  reg             up_xfer_done = 'd0;
   reg             up_xfer_toggle = 'd0;
   reg     [DW:0]  up_xfer_data = 'd0;
   reg             d_xfer_toggle_m1 = 'd0;
   reg             d_xfer_toggle_m2 = 'd0;
   reg             d_xfer_toggle_m3 = 'd0;
+  reg             d_xfer_toggle = 'd0;
   reg     [DW:0]  d_data_cntrl = 'd0;
 
   // internal signals
 
+  wire            up_xfer_enable_s;
   wire            d_xfer_toggle_s;
 
   // device control transfer
 
+  assign up_xfer_enable_s = up_xfer_state ^ up_xfer_toggle;
+
   always @(negedge up_rstn or posedge up_clk) begin
     if (up_rstn == 1'b0) begin
+      up_xfer_state_m1 <= 'd0;
+      up_xfer_state_m2 <= 'd0;
+      up_xfer_state <= 'd0;
       up_xfer_count <= 'd0;
+      up_xfer_done <= 'd0;
       up_xfer_toggle <= 'd0;
       up_xfer_data <= 'd0;
     end else begin
+      up_xfer_state_m1 <= d_xfer_toggle;
+      up_xfer_state_m2 <= up_xfer_state_m1;
+      up_xfer_state <= up_xfer_state_m2;
       up_xfer_count <= up_xfer_count + 1'd1;
-      if (up_xfer_count == 6'd1) begin
+      up_xfer_done <= (up_xfer_count == 6'd1) ? ~up_xfer_enable_s : 1'b0;
+      if ((up_xfer_count == 6'd1) && (up_xfer_enable_s == 1'b0)) begin
         up_xfer_toggle <= ~up_xfer_toggle;
         up_xfer_data <= up_data_cntrl;
       end
@@ -107,11 +125,13 @@ module up_xfer_cntrl (
       d_xfer_toggle_m1 <= 'd0;
       d_xfer_toggle_m2 <= 'd0;
       d_xfer_toggle_m3 <= 'd0;
+      d_xfer_toggle <= 'd0;
       d_data_cntrl <= 'd0;
     end else begin
       d_xfer_toggle_m1 <= up_xfer_toggle;
       d_xfer_toggle_m2 <= d_xfer_toggle_m1;
       d_xfer_toggle_m3 <= d_xfer_toggle_m2;
+      d_xfer_toggle <= d_xfer_toggle_m3;
       if (d_xfer_toggle_s == 1'b1) begin
         d_data_cntrl <= up_xfer_data;
       end

@@ -27,7 +27,7 @@ set proj_dir [get_property directory [current_project]]
 
 # Set project properties
 set obj [get_projects axi_hdmi_tx_v1_00_a]
-set_property "part" "xc7z010clg400-1" $obj
+set_property "board" "xilinx.com:zynq:zc706:1.1" $obj
 set_property "simulator_language" "Mixed" $obj
 set_property "target_language" "VHDL" $obj
 
@@ -64,8 +64,7 @@ if {[string equal [get_filesets constrs_1] ""]} {
 }
 
 # Add files to 'constrs_1' fileset
-set obj [get_filesets constrs_1]
-# Empty (no sources present)
+add_files -norecurse sources/axi_hdmi_tx_constr.xdc
 
 # Set 'constrs_1' fileset properties
 set obj [get_filesets constrs_1]
@@ -97,11 +96,11 @@ set obj [get_runs impl_1]
 
 ipx::package_project -root_dir {../axi_hdmi_tx_v1_00_a}
 
-#ipx::remove_memory_map {s_axi} [ipx::current_core]
-#ipx::add_memory_map {s_axi} [ipx::current_core]
-#set_property slave_memory_map_ref {s_axi} [ipx::get_bus_interface s_axi [ipx::current_core]]
-#ipx::add_address_block {reg0} [ipx::get_memory_map s_axi [ipx::current_core]]
-#set_property range {65536} [ipx::get_address_block reg0 [ipx::get_memory_map s_axi [ipx::current_core]]]
+ipx::remove_memory_map {s_axi} [ipx::current_core]
+ipx::add_memory_map {s_axi} [ipx::current_core]
+set_property slave_memory_map_ref {s_axi} [ipx::get_bus_interface s_axi [ipx::current_core]]
+ipx::add_address_block {axi_lite} [ipx::get_memory_map s_axi [ipx::current_core]]
+set_property range {65536} [ipx::get_address_block axi_lite [ipx::get_memory_map s_axi [ipx::current_core]]]
 
 set_property vendor {kutu.com.au} [ipx::current_core]
 set_property library {kutu} [ipx::current_core]
