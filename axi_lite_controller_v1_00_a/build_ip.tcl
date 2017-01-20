@@ -10,7 +10,7 @@ set proj_dir [get_property directory [current_project]]
 
 # Set project properties
 set obj [get_projects axi_lite_controller_v1_00_a]
-set_property "board" "xilinx.com:zynq:zc706:1.1" $obj
+set_property "part" "xc7z010clg400-1" $obj
 set_property "simulator_language" "Mixed" $obj
 set_property "target_language" "VHDL" $obj
 
