@@ -45,16 +45,16 @@ set obj [get_filesets constrs_1]
 
 # Create 'sim_1' fileset (if not found)
 if {[string equal [get_filesets sim_1] ""]} {
-  create_fileset -simset sim_1
+   create_fileset -simset sim_1
+
+   # Add files to 'sim_1' fileset
+   set obj [get_filesets sim_1]
+   # Empty (no sources present)
+
+   # Set 'sim_1' fileset properties
+   set obj [get_filesets sim_1]
+   set_property "top" "axi_full_controller" $obj
 }
-
-# Add files to 'sim_1' fileset
-set obj [get_filesets sim_1]
-# Empty (no sources present)
-
-# Set 'sim_1' fileset properties
-set obj [get_filesets sim_1]
-set_property "top" "axi_full_controller" $obj
 
 # Create 'synth_1' run (if not found)
 if {[string equal [get_runs synth_1] ""]} {
@@ -68,13 +68,13 @@ if {[string equal [get_runs impl_1] ""]} {
 }
 set obj [get_runs impl_1]
 
+
 ipx::package_project -root_dir {../axi_full_controller_v1_00_a}
 set_property vendor {kutu.com.au} [ipx::current_core]
 set_property library {kutu} [ipx::current_core]
 set_property taxonomy {{/Kutu}} [ipx::current_core]
 set_property vendor_display_name {Kutu Pty. Ltd.} [ipx::current_core]
 set_property company_url {www.kutu.com.au} [ipx::current_core]
-ipx::remove_bus_interface {sys_signal_clock} [ipx::current_core]
 ipx::add_bus_interface AHB [ipx::current_core]
 set_property abstraction_type_vlnv xilinx.com:interface:ahblite_rtl:1.0 [ipx::get_bus_interfaces AHB -of_objects [ipx::current_core]]
 set_property bus_type_vlnv xilinx.com:interface:ahblite:1.0 [ipx::get_bus_interfaces AHB -of_objects [ipx::current_core]]

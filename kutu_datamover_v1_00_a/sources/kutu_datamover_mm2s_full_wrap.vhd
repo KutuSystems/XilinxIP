@@ -600,11 +600,16 @@
      signal sig_data2sf_cmd_cmplt        : std_logic := '0';
      signal sig_cache2mstr_command       : std_logic_vector (7 downto 0);
      signal mm2s_arcache_int             : std_logic_vector (3 downto 0);
-     signal mm2s_aruser_int             : std_logic_vector (3 downto 0);
+     signal mm2s_aruser_int              : std_logic_vector (3 downto 0);
 
+     signal mm2s_cmd_wready_sig          : std_logic;
 
   begin --(architecture implementation)
-   mm2s_xfer_cmplt  <= sig_mstr2data_cmd_cmplt;
+    -- mm2s_xfer_cmplt  <= sig_mstr2data_cmd_cmplt;
+
+
+    mm2s_xfer_cmplt  <= not mm2s_cmd_wvalid and mm2s_cmd_wready_sig and sig_sf2mstr_cmd_ready and sig_addr2rsc_cmd_fifo_empty and not mm2s_rvalid;
+    mm2s_cmd_wready  <= mm2s_cmd_wready_sig;
 
     GEN_CACHE : if (C_ENABLE_CACHE_USER = 0) generate
 
@@ -675,7 +680,7 @@
        secondary_awclk        =>  mm2s_cmdsts_awclk         ,
        reset                  =>  sig_cmd_stat_rst_user     ,
        cmd_wvalid             =>  mm2s_cmd_wvalid           ,
-       cmd_wready             =>  mm2s_cmd_wready           ,
+       cmd_wready             =>  mm2s_cmd_wready_sig       ,
        cmd_wdata              =>  sig_mm2s_cmd_wdata        ,
        cache_data             =>  sig_cache_data            ,
        cmd2mstr_command       =>  sig_cmd2mstr_command      ,

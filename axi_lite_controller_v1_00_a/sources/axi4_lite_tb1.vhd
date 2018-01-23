@@ -33,7 +33,7 @@ FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
    component axi4_lite_controller
    generic (
       C_S_AXI_DATA_WIDTH   : integer  range 32 to 32       := 32;
-      C_S_AXI_ADDR_WIDTH   : integer  range 8 to 32       := 32;
+      C_S_AXI_ADDR_WIDTH   : integer  range 32 to 32       := 32;
       C_SYS_ADDR_WIDTH     : integer  range 8 to 24        := 13;
       C_S_AXI_MIN_SIZE     : std_logic_vector(31 downto 0) := X"00001FFF";
       C_USE_WSTRB          : integer := 0;

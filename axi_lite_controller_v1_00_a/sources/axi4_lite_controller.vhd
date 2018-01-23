@@ -10,7 +10,7 @@
 --------------------------------------------------------------
 --
 -- This module receives commands from the UART input and
--- implements a memory mapped interface based on the Modbus 
+-- implements a memory mapped interface based on the Modbus
 -- protocol.
 --
 --------------------------------------------------------------
@@ -78,13 +78,13 @@ architecture RTL of axi4_lite_controller is
    constant RESP_EXOKAY       : std_logic_vector(1 downto 0) := "01";
    constant RESP_SLVERR       : std_logic_vector(1 downto 0) := "10";
    constant RESP_DECERR       : std_logic_vector(1 downto 0) := "11";
- 
+
 --   constant BAR               : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0) := C_BASEADDR;
 
 --   constant ADDR_NOR          : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0) := C_BASEADDR xor C_HIGHADDR;
- 
+
    function Get_Addr_Bits (compare : std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0)) return integer is
-      
+
       variable i : integer;
 
    begin
@@ -111,6 +111,8 @@ architecture RTL of axi4_lite_controller is
    signal   S_AXI_LITE_AWREADY_sig     : std_logic;
    signal   S_AXI_LITE_ARREADY_sig     : std_logic;
    signal   S_AXI_LITE_RVALID_sig      : std_logic;
+   signal   S_AXI_LITE_BVALID_sig      : std_logic;
+   signal   bvalid_dly                 : std_logic;
 
 begin
 
@@ -168,22 +170,32 @@ begin
    -- process for write acknowledge signals
    S_AXI_LITE_WREADY   <= S_AXI_LITE_WREADY_sig;
    S_AXI_LITE_AWREADY  <= S_AXI_LITE_AWREADY_sig;
+   S_AXI_LITE_BVALID   <= S_AXI_LITE_BVALID_sig;
    process (clk)
    begin
       if rising_edge(clk) then
          if reset = '1' then
-            S_AXI_LITE_AWREADY_sig  <= '0';
+            S_AXI_LITE_AWREADY_sig <= '0';
             S_AXI_LITE_WREADY_sig  <= '0';
-            S_AXI_LITE_BVALID      <= '0';
+            S_AXI_LITE_BVALID_sig  <= '0';
+            bvalid_dly             <= '0';
          else
             S_AXI_LITE_AWREADY_sig <= S_AXI_LITE_WVALID and S_AXI_LITE_AWVALID and write_addr_active and not S_AXI_LITE_AWREADY_sig;
             S_AXI_LITE_WREADY_sig  <= S_AXI_LITE_WVALID and S_AXI_LITE_AWVALID and write_addr_active and not S_AXI_LITE_WREADY_sig;
-            S_AXI_LITE_BVALID      <= S_AXI_LITE_WREADY_sig;
+
+            bvalid_dly <= S_AXI_LITE_BVALID_sig;
+            if S_AXI_LITE_WREADY_sig = '1' and S_AXI_LITE_BVALID_sig = '0' then
+               S_AXI_LITE_BVALID_sig   <= '1';
+            elsif S_AXI_LITE_BREADY = '1' or bvalid_dly = '1' then
+               S_AXI_LITE_BVALID_sig   <= '0';
+            end if;
+
          end if;
       end if;
    end process;
 
    -- process for read acknowledge signals
+   S_AXI_LITE_RVALID    <= S_AXI_LITE_RVALID_sig;
    S_AXI_LITE_ARREADY   <= S_AXI_LITE_ARREADY_sig;
    sys_rd_cmd           <= sys_rd_cmd_sig;
    process (clk)
@@ -191,11 +203,17 @@ begin
       if rising_edge(clk) then
          if reset = '1' then
             sys_rd_cmd_sig          <= '0';
-            S_AXI_LITE_RVALID       <= '0';
+            S_AXI_LITE_RVALID_sig   <= '0';
             S_AXI_LITE_ARREADY_sig  <= '0';
          else
             sys_rd_cmd_sig          <= S_AXI_LITE_ARVALID and S_AXI_LITE_RREADY;
-            S_AXI_LITE_RVALID       <= S_AXI_LITE_ARREADY_sig and S_AXI_LITE_RREADY;
+
+            if S_AXI_LITE_ARREADY_sig = '1' and S_AXI_LITE_RVALID_sig = '0' then
+               S_AXI_LITE_RVALID_sig <= '1';
+            elsif S_AXI_LITE_RREADY = '1' then
+               S_AXI_LITE_RVALID_sig <= '0';
+            end if;
+
             S_AXI_LITE_ARREADY_sig  <= (sys_rd_endcmd or kill_read) and S_AXI_LITE_ARVALID and S_AXI_LITE_RREADY and not S_AXI_LITE_ARREADY_sig;
          end if;
       end if;
@@ -225,6 +243,3 @@ begin
    end process;
 
 end RTL;
-
-
-

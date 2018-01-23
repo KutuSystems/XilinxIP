@@ -83,6 +83,7 @@ set_property supported_families \
      {aartix7}    {Production} \
      {qartix7}    {Production} \
      {zynq}       {Production} \
+     {zynquplus}  {Beta} \
      {qzynq}      {Production} \
      {azynq}      {Production}} \
   [ipx::current_core]

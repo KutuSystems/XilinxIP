@@ -39,7 +39,7 @@
 
 `timescale 1ns/100ps
 
-module up_axi (
+module up_axi_clkgen (
 
   // reset and clocks
 

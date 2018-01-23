@@ -60,16 +60,16 @@ entity axi4_lite_controller_dma is
 
       -- interface to datamovers
       dma_clk                 : in  std_logic;
-      S_MIG_MM2S_CMD_tdata    : out std_logic_vector(71 downto 0);
+      S_MIG_MM2S_CMD_tdata    : out std_logic_vector(63 downto 0);
       S_MIG_MM2S_CMD_tready   : in std_logic;
       S_MIG_MM2S_CMD_tvalid   : out std_logic;
-      S_MIG_S2MM_CMD_tdata    : out std_logic_vector(71 downto 0 );
+      S_MIG_S2MM_CMD_tdata    : out std_logic_vector(63 downto 0 );
       S_MIG_S2MM_CMD_tready   : in std_logic;
       S_MIG_S2MM_CMD_tvalid   : out std_logic;
-      S_ZYNQ_MM2S_CMD_tdata   : out std_logic_vector(71 downto 0 );
+      S_ZYNQ_MM2S_CMD_tdata   : out std_logic_vector(63 downto 0 );
       S_ZYNQ_MM2S_CMD_tready  : in std_logic;
       S_ZYNQ_MM2S_CMD_tvalid  : out std_logic;
-      S_ZYNQ_S2MM_CMD_tdata   : out std_logic_vector(71 downto 0 );
+      S_ZYNQ_S2MM_CMD_tdata   : out std_logic_vector(63 downto 0 );
       S_ZYNQ_S2MM_CMD_tready  : in std_logic;
       S_ZYNQ_S2MM_CMD_tvalid  : out std_logic;
 
@@ -153,11 +153,11 @@ architecture RTL of axi4_lite_controller_dma is
 
    signal   mig_wr_addr             : std_logic_vector(31 downto 0);
    signal   arm_rd_addr             : std_logic_vector(31 downto 0);
-   signal   arm_mig_size            : std_logic_vector(22 downto 0);
+   signal   arm_mig_size            : std_logic_vector(29 downto 0);
 
    signal   arm_wr_addr             : std_logic_vector(31 downto 0);
    signal   mig_rd_addr             : std_logic_vector(31 downto 0);
-   signal   mig_arm_size            : std_logic_vector(22 downto 0);
+   signal   mig_arm_size            : std_logic_vector(29 downto 0);
 
 begin
 
@@ -171,10 +171,10 @@ begin
    sys_clk                 <= S_AXI_LITE_ACLK;
    reset                   <= not S_AXI_LITE_ARESETN;
 
-   S_MIG_MM2S_CMD_tdata    <= "00000000" & mig_rd_addr & "010000001" & mig_arm_size;
-   S_MIG_S2MM_CMD_tdata    <= "00000000" & mig_wr_addr & "010000001" & arm_mig_size;
-   S_ZYNQ_MM2S_CMD_tdata   <= "00000000" & arm_rd_addr & "010000001" & arm_mig_size;
-   S_ZYNQ_S2MM_CMD_tdata   <= "00000000" & arm_wr_addr & "010000001" & mig_arm_size;
+   S_MIG_MM2S_CMD_tdata    <= mig_rd_addr & "11" & mig_arm_size;
+   S_MIG_S2MM_CMD_tdata    <= mig_wr_addr & "11" & arm_mig_size;
+   S_ZYNQ_MM2S_CMD_tdata   <= arm_rd_addr & "11" & arm_mig_size;
+   S_ZYNQ_S2MM_CMD_tdata   <= arm_wr_addr & "11" & mig_arm_size;
 
    process (clk)
    begin
@@ -310,7 +310,7 @@ begin
             end if;
 
             if sys_wr_cmd_sig = '1' and dma_decode = '1' and sys_wraddr_sig(4 downto 2) = ARM_TO_MIG_SIZE(4 downto 2)  then
-               arm_mig_size   <= sys_wrdata_sig(22 downto 0);
+               arm_mig_size   <= sys_wrdata_sig(29 downto 0);
             end if;
 
             if sys_wr_cmd_sig = '1' and dma_decode = '1' and sys_wraddr_sig(4 downto 2) = ARM_WRITE_ADDR(4 downto 2)  then
@@ -322,7 +322,7 @@ begin
             end if;
 
             if sys_wr_cmd_sig = '1' and dma_decode = '1' and sys_wraddr_sig(4 downto 2) = MIG_TO_ARM_SIZE(4 downto 2)  then
-               mig_arm_size   <= sys_wrdata_sig(22 downto 0);
+               mig_arm_size   <= sys_wrdata_sig(29 downto 0);
             end if;
 
 

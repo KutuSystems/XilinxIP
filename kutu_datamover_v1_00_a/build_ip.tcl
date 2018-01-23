@@ -135,6 +135,7 @@ set_property supported_families \
      {aartix7}    {Production} \
      {qartix7}    {Production} \
      {zynq}       {Production} \
+     {zynquplus}  {Beta} \
      {qzynq}      {Production} \
      {azynq}      {Production}} \
   [ipx::current_core]
@@ -147,6 +148,8 @@ set_property enablement_dependency spirit:decode(id('MODELPARAM_VALUE.C_INCLUDE_
 set_property enablement_dependency spirit:decode(id('MODELPARAM_VALUE.C_INCLUDE_S2MM'))=1 [ipx::get_bus_interfaces s_axis_s2mm_cmd -of_objects [ipx::current_core]]
 set_property enablement_dependency spirit:decode(id('MODELPARAM_VALUE.C_INCLUDE_MM2S'))=1 [ipx::get_ports mm2s_err -of_objects [ipx::current_core]]
 set_property enablement_dependency spirit:decode(id('MODELPARAM_VALUE.C_INCLUDE_S2MM'))=1 [ipx::get_ports s2mm_err -of_objects [ipx::current_core]]
+set_property enablement_dependency spirit:decode(id('MODELPARAM_VALUE.C_INCLUDE_MM2S'))=1 [ipx::get_ports mm2s_xfer_cmplt -of_objects [ipx::current_core]]
+set_property enablement_dependency spirit:decode(id('MODELPARAM_VALUE.C_INCLUDE_S2MM'))=1 [ipx::get_ports s2mm_xfer_cmplt -of_objects [ipx::current_core]]
 
 set_property enablement_dependency spirit:decode(id('MODELPARAM_VALUE.C_INCLUDE_MM2S'))=1 [ipx::get_bus_interfaces m_axi_mm2s_aresetn -of_objects [ipx::current_core]]
 set_property enablement_dependency spirit:decode(id('MODELPARAM_VALUE.C_INCLUDE_MM2S'))=1 [ipx::get_bus_interfaces s_axis_mm2s_cmd_aresetn -of_objects [ipx::current_core]]
@@ -240,6 +243,15 @@ set_property description {Clock frequency (Hertz)} [ipx::get_bus_parameters FREQ
 
 ipx::add_bus_parameter FREQ_HZ [ipx::get_bus_interfaces s_axis_s2mm -of_objects [ipx::current_core]]
 set_property description {Clock frequency (Hertz)} [ipx::get_bus_parameters FREQ_HZ -of_objects [ipx::get_bus_interfaces s_axis_s2mm -of_objects [ipx::current_core]]]
+
+set_property range_dependency {pow(2,(spirit:decode(id('MODELPARAM_VALUE.C_M_AXI_MM2S_ADDR_WIDTH')) - 1) + 1)} [ipx::get_address_spaces m_axi_mm2s -of_objects [ipx::current_core]]
+set_property range_resolve_type dependent [ipx::get_address_spaces m_axi_mm2s -of_objects [ipx::current_core]]
+#set_property range_minimum 4096 [ipx::get_address_spaces m_axi_mm2s -of_objects [ipx::current_core]]
+set_property width_dependency {(spirit:decode(id('MODELPARAM_VALUE.C_M_AXI_MM2S_ADDR_WIDTH')) - 1) + 1} [ipx::get_address_spaces m_axi_mm2s -of_objects [ipx::current_core]]
+#set_property range_minimum 4096 [ipx::get_address_spaces m_axi_mm2s -of_objects [ipx::current_core]]
+set_property width_resolve_type dependent [ipx::get_address_spaces m_axi_mm2s -of_objects [ipx::current_core]]
+#set_property width 512 [ipx::get_address_spaces m_axi_mm2s -of_objects [ipx::current_core]]
+set_property width 512 [ipx::get_address_spaces m_axi_mm2s -of_objects [ipx::current_core]]
 
 ipx::create_xgui_files [ipx::current_core]
 ipx::save_core [ipx::current_core]

@@ -106,8 +106,10 @@ module axi_hdmi_tx (
   parameter   PCORE_DEVICE_TYPE = 0;
   parameter   PCORE_EMBEDDED_SYNC = 0;
   parameter   C_S_AXI_MIN_SIZE = 32'hffff;
-  parameter   C_BASEADDR = 32'hffffffff;
-  parameter   C_HIGHADDR = 32'h00000000;
+
+  localparam  XILINX_7SERIES = 0;
+  localparam  XILINX_ULTRASCALE = 1;
+  localparam  ALTERA_5SERIES = 16;
 
   // hdmi interface
 
@@ -179,12 +181,14 @@ module axi_hdmi_tx (
 
   // internal signals
 
-  wire            up_sel_s;
-  wire            up_wr_s;
-  wire    [13:0]  up_addr_s;
+  wire            up_wreq_s;
+  wire    [13:0]  up_waddr_s;
   wire    [31:0]  up_wdata_s;
+  wire            up_wack_s;
+  wire            up_rreq_s;
+  wire    [13:0]  up_raddr_s;
   wire    [31:0]  up_rdata_s;
-  wire            up_ack_s;
+  wire            up_rack_s;
   wire            hdmi_full_range_s;
   wire            hdmi_csc_bypass_s;
   wire    [ 1:0]  hdmi_srcsel_s;
@@ -213,6 +217,9 @@ module axi_hdmi_tx (
   wire    [47:0]  vdma_wdata_s;
   wire            vdma_fs_ret_toggle_s;
   wire    [ 8:0]  vdma_fs_waddr_s;
+  wire            vdma_ovf_s;
+  wire            vdma_unf_s;
+  wire            vdma_tpm_oos_s;
 
   // signal name changes
 
@@ -227,10 +234,7 @@ module axi_hdmi_tx (
 
   // axi interface
 
-  up_axi #(
-    .PCORE_BASEADDR (C_BASEADDR),
-    .PCORE_HIGHADDR (C_HIGHADDR))
-  i_up_axi (
+  up_axi i_up_axi (
     .up_rstn (up_rstn),
     .up_clk (up_clk),
     .up_axi_awvalid (s_axi_awvalid),
@@ -250,12 +254,14 @@ module axi_hdmi_tx (
     .up_axi_rresp (s_axi_rresp),
     .up_axi_rdata (s_axi_rdata),
     .up_axi_rready (s_axi_rready),
-    .up_sel (up_sel_s),
-    .up_wr (up_wr_s),
-    .up_addr (up_addr_s),
+    .up_wreq (up_wreq_s),
+    .up_waddr (up_waddr_s),
     .up_wdata (up_wdata_s),
+    .up_wack (up_wack_s),
+    .up_rreq (up_rreq_s),
+    .up_raddr (up_raddr_s),
     .up_rdata (up_rdata_s),
-    .up_ack (up_ack_s));
+    .up_rack (up_rack_s));
 
   // processor interface
 
@@ -286,12 +292,14 @@ module axi_hdmi_tx (
     .vdma_tpm_oos (vdma_tpm_oos_s),
     .up_rstn (up_rstn),
     .up_clk (up_clk),
-    .up_sel (up_sel_s),
-    .up_wr (up_wr_s),
-    .up_addr (up_addr_s),
+    .up_wreq (up_wreq_s),
+    .up_waddr (up_waddr_s),
     .up_wdata (up_wdata_s),
+    .up_wack (up_wack_s),
+    .up_rreq (up_rreq_s),
+    .up_raddr (up_raddr_s),
     .up_rdata (up_rdata_s),
-    .up_ack (up_ack_s));
+    .up_rack (up_rack_s));
 
   // vdma interface
 
@@ -362,6 +370,17 @@ module axi_hdmi_tx (
 
   // hdmi output clock
 
+  generate
+  if (PCORE_DEVICE_TYPE == XILINX_ULTRASCALE) begin
+  ODDRE1 #(.SRVAL(1'b0)) i_clk_oddr (
+    .SR (1'b0),
+    .D1 (1'b1),
+    .D2 (1'b0),
+    .C (hdmi_clk),
+    .Q (hdmi_out_clk));
+  end
+
+  if (PCORE_DEVICE_TYPE == XILINX_7SERIES) begin
   ODDR #(.INIT(1'b0)) i_clk_oddr (
     .R (1'b0),
     .S (1'b0),
@@ -370,6 +389,8 @@ module axi_hdmi_tx (
     .D2 (1'b0),
     .C (hdmi_clk),
     .Q (hdmi_out_clk));
+  end
+  endgenerate
 
 endmodule
 

@@ -27,7 +27,7 @@ set proj_dir [get_property directory [current_project]]
 
 # Set project properties
 set obj [get_projects axi_hdmi_tx_v1_00_a]
-set_property "part" "xc7z010clg400-1" $obj
+set_property "board_part" "xilinx.com:zc702:part0:1.3" $obj
 set_property "simulator_language" "Mixed" $obj
 set_property "target_language" "VHDL" $obj
 
@@ -64,8 +64,7 @@ if {[string equal [get_filesets constrs_1] ""]} {
 }
 
 # Add files to 'constrs_1' fileset
-set obj [get_filesets constrs_1]
-# Empty (no sources present)
+add_files -norecurse sources/axi_hdmi_tx_constr.xdc
 
 # Set 'constrs_1' fileset properties
 set obj [get_filesets constrs_1]
@@ -76,12 +75,12 @@ if {[string equal [get_filesets sim_1] ""]} {
 }
 
 # Add files to 'sim_1' fileset
-set obj [get_filesets sim_1]
+#set obj [get_filesets sim_1]
 # Empty (no sources present)
 
 # Set 'sim_1' fileset properties
-set obj [get_filesets sim_1]
-set_property "top" "axi_hdmi_tx" $obj
+#set obj [get_filesets sim_1]
+#set_property "top" "axi_hdmi_tx" $obj
 
 # Create 'synth_1' run (if not found)
 if {[string equal [get_runs synth_1] ""]} {
@@ -97,11 +96,11 @@ set obj [get_runs impl_1]
 
 ipx::package_project -root_dir {../axi_hdmi_tx_v1_00_a}
 
-#ipx::remove_memory_map {s_axi} [ipx::current_core]
-#ipx::add_memory_map {s_axi} [ipx::current_core]
-#set_property slave_memory_map_ref {s_axi} [ipx::get_bus_interface s_axi [ipx::current_core]]
-#ipx::add_address_block {reg0} [ipx::get_memory_map s_axi [ipx::current_core]]
-#set_property range {65536} [ipx::get_address_block reg0 [ipx::get_memory_map s_axi [ipx::current_core]]]
+ipx::remove_memory_map {s_axi} [ipx::current_core]
+ipx::add_memory_map {s_axi} [ipx::current_core]
+set_property slave_memory_map_ref {s_axi} [ipx::get_bus_interface s_axi [ipx::current_core]]
+ipx::add_address_block {axi_lite} [ipx::get_memory_map s_axi [ipx::current_core]]
+set_property range {65536} [ipx::get_address_block axi_lite [ipx::get_memory_map s_axi [ipx::current_core]]]
 
 set_property vendor {kutu.com.au} [ipx::current_core]
 set_property library {kutu} [ipx::current_core]
@@ -109,9 +108,9 @@ set_property taxonomy {{/Kutu}} [ipx::current_core]
 set_property vendor_display_name {Kutu Pty. Ltd.} [ipx::current_core]
 set_property company_url {www.kutu.com.au} [ipx::current_core]
 
-ipx::remove_bus_interface {hdmi_signal_clock} [ipx::current_core]
-ipx::remove_bus_interface {hdmi_out_signal_clock} [ipx::current_core]
-  
+ipx::remove_bus_interface hdmi_clk [ipx::current_core]
+ipx::remove_bus_interface hdmi_out_clk [ipx::current_core]
+
 #set_property value {0xFFFFFFFF} [ipx::get_hdl_parameter C_HIGHADDR [ipx::current_core]]
 #set_property value {0x00000000} [ipx::get_hdl_parameter C_BASEADDR [ipx::current_core]]
 
@@ -127,6 +126,7 @@ set_property supported_families \
      {aartix7}    {Production} \
      {qartix7}    {Production} \
      {zynq}       {Production} \
+     {zynquplus}  {Beta} \
      {qzynq}      {Production} \
      {azynq}      {Production}} \
   [ipx::current_core]
@@ -136,4 +136,3 @@ ipx::save_core [ipx::current_core]
 #update_ip_catalog -rebuild -repo_path ../../XilinxIP
 ipx::check_integrity -quiet [ipx::current_core]
 ipx::unload_core {kutu.com.au:kutu:axi_hdmi_tx:1.0}
-

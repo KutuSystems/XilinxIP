@@ -10,7 +10,7 @@ set proj_dir [get_property directory [current_project]]
 
 # Set project properties
 set obj [get_projects axi_lite_controller_v1_00_a]
-set_property "part" "xc7z010clg400-1" $obj
+set_property "board" "xilinx.com:zynq:zc706:1.1" $obj
 set_property "simulator_language" "Mixed" $obj
 set_property "target_language" "VHDL" $obj
 
@@ -41,16 +41,17 @@ set obj [get_filesets constrs_1]
 
 # Create 'sim_1' fileset (if not found)
 if {[string equal [get_filesets sim_1] ""]} {
-  create_fileset -simset sim_1
+   create_fileset -simset sim_1
+
+
+   # Add files to 'sim_1' fileset
+   set obj [get_filesets sim_1]
+   # Empty (no sources present)
+
+   # Set 'sim_1' fileset properties
+   set obj [get_filesets sim_1]
+   set_property "top" "axi4_lite_controller" $obj
 }
-
-# Add files to 'sim_1' fileset
-set obj [get_filesets sim_1]
-# Empty (no sources present)
-
-# Set 'sim_1' fileset properties
-set obj [get_filesets sim_1]
-set_property "top" "axi4_lite_controller" $obj
 
 # Create 'synth_1' run (if not found)
 if {[string equal [get_runs synth_1] ""]} {
@@ -70,7 +71,7 @@ set_property library {kutu} [ipx::current_core]
 set_property taxonomy {{/Kutu}} [ipx::current_core]
 set_property vendor_display_name {Kutu Pty. Ltd.} [ipx::current_core]
 set_property company_url {www.kutu.com.au} [ipx::current_core]
-ipx::remove_bus_interface {sys_signal_clock} [ipx::current_core]
+ipx::remove_bus_interface {sys_clk} [ipx::current_core]
 
 ipx::create_xgui_files [ipx::current_core]
 ipx::create_xgui_files [ipx::current_core]
