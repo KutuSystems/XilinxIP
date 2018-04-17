@@ -55,10 +55,10 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 library UNISIM;
 use UNISIM.VComponents.all;
 
-library hdmi_tx_v1_00_a;
-use hdmi_tx_v1_00_a.clock_gen;
-use hdmi_tx_v1_00_a.TMDS_encoder;
-use hdmi_tx_v1_00_a.serializer;
+library hdmi_display_v1_00_a;
+use hdmi_display_v1_00_a.clock_gen;
+use hdmi_display_v1_00_a.TMDS_encoder;
+use hdmi_display_v1_00_a.serializer;
 
 
 entity hdmi_tx is
@@ -120,7 +120,7 @@ begin
 
    video_clk <= clk;
 
-   clock_gen_1 : entity hdmi_tx_v1_00_a.clock_gen
+   clock_gen_1 : entity hdmi_display_v1_00_a.clock_gen
    generic map
    (
       PLL_MULTIPLY   => PLL_MULTIPLY,
@@ -171,7 +171,7 @@ begin
    c     <= vsync & hsync;
    blank <= de;
 
-	TMDS_encoder_red: entity hdmi_tx_v1_00_a.TMDS_encoder
+	TMDS_encoder_red: entity hdmi_display_v1_00_a.TMDS_encoder
    port map
    (
       reset    => reset_reg,
@@ -182,7 +182,7 @@ begin
       encoded  => tmds_red
    );
 
-	TMDS_encoder_green: entity hdmi_tx_v1_00_a.TMDS_encoder
+	TMDS_encoder_green: entity hdmi_display_v1_00_a.TMDS_encoder
    port map
    (
       reset    => reset_reg,
@@ -193,7 +193,7 @@ begin
       encoded  => tmds_green
    );
 
-	TMDS_encoder_blue: entity hdmi_tx_v1_00_a.TMDS_encoder
+	TMDS_encoder_blue: entity hdmi_display_v1_00_a.TMDS_encoder
    port map
    (
       reset    => reset_reg,
@@ -205,7 +205,7 @@ begin
    );
 
    -- I/O serializers
-   ser_ch0: entity hdmi_tx_v1_00_a.serializer
+   ser_ch0: entity hdmi_display_v1_00_a.serializer
    port map
    (
       reset    => reset_reg,
@@ -216,7 +216,7 @@ begin
       DOUT_N   => HDMI_D0_N
    );
 
-   ser_ch1: entity hdmi_tx_v1_00_a.serializer
+   ser_ch1: entity hdmi_display_v1_00_a.serializer
    port map
    (
       reset    => reset_reg,
@@ -227,7 +227,7 @@ begin
       DOUT_N   => HDMI_D1_N
    );
 
-   ser_ch2: entity hdmi_tx_v1_00_a.serializer
+   ser_ch2: entity hdmi_display_v1_00_a.serializer
    port map
    (
       reset    => reset_reg,
@@ -238,7 +238,7 @@ begin
       DOUT_N   => HDMI_D2_N
    );
 
-   ser_ch3: entity hdmi_tx_v1_00_a.serializer
+   ser_ch3: entity hdmi_display_v1_00_a.serializer
    port map
    (
       reset    => reset_reg,

@@ -55,9 +55,9 @@ use ieee.std_logic_unsigned.all;
 library UNISIM;
 use UNISIM.VComponents.all;
 
-library hdmi_tx_v1_00_a;
-use hdmi_tx_v1_00_a.frame_gen;
-use hdmi_tx_v1_00_a.hdmi_tx;
+library hdmi_display_v1_00_a;
+use hdmi_display_v1_00_a.frame_gen;
+use hdmi_display_v1_00_a.hdmi_tx;
 
 entity hdmi_display is
    generic
@@ -153,7 +153,7 @@ begin
    s_axis_mm2s_aclk <= pxl_clk;
 
    -- Instantiation of display controller
-   frame_gen_1 : entity hdmi_tx_v1_00_a.frame_gen
+   frame_gen_1 : entity hdmi_display_v1_00_a.frame_gen
    generic map
    (
       -- Video frame parameters
@@ -199,7 +199,7 @@ begin
       debug_vga_running => debug_vga_running
    );
 
-   hdmi_tx_1 : entity hdmi_tx_v1_00_a.hdmi_tx
+   hdmi_tx_1 : entity hdmi_display_v1_00_a.hdmi_tx
    generic map
    (
       PLL_MULTIPLY   => PLL_MULTIPLY,
