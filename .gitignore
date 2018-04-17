@@ -1,7 +1,6 @@
 *.data
 *.xpr
 *.log
-*.xml
 *.jou
 xgui
 *.runs
