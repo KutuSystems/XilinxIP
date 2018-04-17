@@ -139,8 +139,8 @@ begin
    debug_vga_active  <= vga_active;
    debug_vga_running <= vga_running;
 
--- VGA frame generation starts when there is
--- a valid clock
+   -- VGA frame generation starts when there is
+   -- a valid clock
    process (pxl_clk)
    begin
       if (rising_edge(pxl_clk)) then
@@ -152,12 +152,13 @@ begin
       end if;
    end process;
 
--- frame output is default color (normally black)
--- until data from VDMA is available
+   -- frame output is default colour (normally black)
+   -- until data from VDMA is available
+   -- If data stops being sent by dma then revert to default colour
    process (pxl_clk, locked)
    begin
       if (rising_edge(pxl_clk)) then
-         if vga_running = '0' then
+         if vga_running = '0' or (video_dv = '1' and S_AXIS_TVALID = '0') then
             vga_active <= '0';
          elsif S_AXIS_TVALID = '1' then
             vga_active <= '1';
@@ -197,7 +198,6 @@ begin
 
       end if;
    end process;
-
 
   -- Sync Generator
    process (pxl_clk, locked)
@@ -248,12 +248,11 @@ begin
    hsync <= h_sync_dly;
    vsync <= v_sync_dly;
 
-
    -- trigger fsync to VDMA after last pixel has been read out
    process (pxl_clk)
    begin
       if (rising_edge(pxl_clk)) then
-         if (v_count = USER_VSIZE - 1) and last_h_count = '1' then
+         if (v_count = USER_VSIZE + 3) and last_h_count = '1' then
             fsync_reg <= '1';
          else
             fsync_reg <= '0';
@@ -267,30 +266,37 @@ begin
    process (pxl_clk, locked)
    begin
       if (locked = '0') then
-         video_dv <= '0';
-         video_dv_dly <= '0';
+         video_dv       <= '0';
+         de             <= '0';
+         s_axis_tready  <= '0';
       elsif (rising_edge(pxl_clk)) then
 
          if vga_running = '0' then
-            video_dv <= '0';
-            video_dv_dly <= '0';
+            video_dv       <= '0';
+            de             <= '0';
          else
 
+            -- video dv is actual data reads
             if (v_count < USER_VSIZE -1) and (h_count < USER_HSIZE - 1) then
                video_dv <= '1';
             else
                video_dv <= '0';
             end if;
 
-            video_dv_dly <= video_dv;
+            -- s_axis_tready has 4 extra lines to dump extra data
+            if (v_count < USER_VSIZE + 3) and (h_count < USER_HSIZE - 1) then
+               s_axis_tready <= '1';
+            else
+               s_axis_tready <= '0';
+            end if;
+
+            de <= video_dv;
 
          end if;
       end if;
    end process;
 
-   s_axis_tready  <= video_dv;
-   de             <= video_dv_dly;
-
+   -- output data
    process (pxl_clk, locked)
    begin
       if (rising_edge(pxl_clk)) then

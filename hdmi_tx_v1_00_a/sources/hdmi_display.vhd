@@ -62,6 +62,8 @@ use hdmi_tx_v1_00_a.hdmi_tx;
 entity hdmi_display is
    generic
    (
+      DEBUG_OUTPUTS        : integer := 0;
+
       -- Video frame parameters
       USR_HSIZE            : integer := 1920;
       USR_VSIZE            : integer := 1080;
