@@ -76,7 +76,7 @@ entity frame_gen is
       s_axis_aresetn	   : in  std_logic;
       s_axis_tready	   : out std_logic;
       s_axis_tdata	   : in  std_logic_vector(31 downto 0);
-      s_axis_tstrb	   : in  std_logic_vector(3 downto 0);
+      s_axis_tkeep	   : in  std_logic_vector(3 downto 0);
       s_axis_tlast	   : in  std_logic;
       s_axis_tvalid	   : in  std_logic;
 
@@ -143,7 +143,7 @@ begin
    -- a valid clock
    process (pxl_clk)
    begin
-      if (rising_edge(pxl_clk)) then
+      if rising_edge(pxl_clk) then
          if reset = '1' or locked = '0' then
             vga_running <= '0';
          else
@@ -155,7 +155,7 @@ begin
    -- frame output is default colour (normally black)
    -- until data from VDMA is available
    -- If data stops being sent by dma then revert to default colour
-   process (pxl_clk, locked)
+   process (pxl_clk)
    begin
       if (rising_edge(pxl_clk)) then
          if vga_running = '0' or (video_dv = '1' and S_AXIS_TVALID = '0') then
@@ -202,11 +202,11 @@ begin
   -- Sync Generator
    process (pxl_clk, locked)
    begin
-      if (locked = '0') then
+      if locked = '0' then
          h_sync_reg <= '0';
-      elsif (rising_edge(pxl_clk)) then
-         if (vga_running = '1') then
-            if ((h_count >= USER_HFRONT_PORCH) and (h_count < USER_HBACK_PORCH)) then
+      elsif rising_edge(pxl_clk) then
+         if vga_running = '1' then
+            if (h_count >= USER_HFRONT_PORCH) and (h_count < USER_HBACK_PORCH) then
                h_sync_reg <= USER_HPOLARITY;
             else
                h_sync_reg <= not(USER_HPOLARITY);
@@ -219,11 +219,11 @@ begin
 
    process (pxl_clk, locked)
    begin
-      if (locked = '0') then
+      if locked = '0' then
          v_sync_reg <= '0';
       elsif (rising_edge(pxl_clk)) then
-         if (vga_running = '1') then
-            if ((v_count >= USER_VFRONT_PORCH) and (v_count < USER_VBACK_PORCH)) then
+         if vga_running = '1' then
+            if (v_count >= USER_VFRONT_PORCH) and (v_count < USER_VBACK_PORCH) then
                v_sync_reg <= USER_VPOLARITY;
             else
                v_sync_reg <= not(USER_VPOLARITY);
@@ -236,10 +236,10 @@ begin
 
    process (pxl_clk, locked)
    begin
-      if (locked = '0') then
+      if locked = '0' then
          v_sync_dly <= '0';
          h_sync_dly <= '0';
-      elsif (rising_edge(pxl_clk)) then
+      elsif rising_edge(pxl_clk) then
          v_sync_dly <= v_sync_reg;
          h_sync_dly <= h_sync_reg;
       end if;
@@ -251,7 +251,7 @@ begin
    -- trigger fsync to VDMA after last pixel has been read out
    process (pxl_clk)
    begin
-      if (rising_edge(pxl_clk)) then
+      if rising_edge(pxl_clk) then
          if (v_count = USER_VSIZE + 3) and last_h_count = '1' then
             fsync_reg <= '1';
          else
@@ -265,11 +265,11 @@ begin
    -- data enable
    process (pxl_clk, locked)
    begin
-      if (locked = '0') then
+      if locked = '0' then
          video_dv       <= '0';
          de             <= '0';
          s_axis_tready  <= '0';
-      elsif (rising_edge(pxl_clk)) then
+      elsif rising_edge(pxl_clk) then
 
          if vga_running = '0' then
             video_dv       <= '0';
@@ -297,9 +297,9 @@ begin
    end process;
 
    -- output data
-   process (pxl_clk, locked)
+   process (pxl_clk)
    begin
-      if (rising_edge(pxl_clk)) then
+      if rising_edge(pxl_clk) then
          if video_dv = '1' and vga_active <= '1' then
             red       <= S_AXIS_TDATA(23 downto 16);
             green     <= S_AXIS_TDATA(15 downto 8);

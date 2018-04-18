@@ -103,12 +103,10 @@ architecture RTL of hdmi_tx is
    signal PXL_CLK_5X     : std_logic;
 
    signal clk           : std_logic;
-   signal pll_clk       : std_logic;
-   signal pll_locked    : std_logic;
-   signal locked_n      : std_logic;
-   signal reset200      : std_logic;
-   signal reset_reclock : std_logic;
-   signal reset_reg     : std_logic;
+   signal pll_locked    : std_logic := '0';
+   signal reset200      : std_logic := '1';
+   signal reset_reclock : std_logic := '1';
+   signal reset_reg     : std_logic := '1';
    signal c             : std_logic_vector(1 downto 0);
    signal blank         : std_logic;
 
@@ -138,8 +136,6 @@ begin
       locked   => pll_locked
    );
 
-   locked_n <= not pll_locked;
-
    process (clk200)
    begin
       if rising_edge(clk200) then
@@ -156,13 +152,10 @@ begin
    begin
       if rising_edge(clk) then
 
-         reset_reclock <= reset or reset200;
+         locked         <= pll_locked;
+         reset_reclock  <= reset or reset200 or not pll_locked;
+         reset_reg <= reset_reclock or reset or reset200 or not pll_locked;
 
-         if reset_reclock = '1' then
-            reset_reg   <= '1';
-         else
-            reset_reg   <= not pll_locked;
-        end if;
       end if;
    end process;
 

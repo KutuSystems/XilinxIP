@@ -72,9 +72,13 @@ begin
          xored_reg   <= xored;
          xnored_reg  <= xnored;
 
+         if reset = '1' then
+            ones <= "0000";
+         else
          -- Count how many ones are set in data
-         ones <= "0000" + data(0) + data(1) + data(2) + data(3)
-                 + data(4) + data(5) + data(6) + data(7);
+            ones <= "0000" + data(0) + data(1) + data(2) + data(3)
+                     + data(4) + data(5) + data(6) + data(7);
+         end if;
 
          data0_reg <= data(0);
 
@@ -98,8 +102,12 @@ begin
    begin
       if rising_edge(clk) then
          -- Work out the DC bias of the dataword;
-         data_word_disparity  <= "1100" + data_word(0) + data_word(1) + data_word(2) + data_word(3)
+         if reset = '1' then
+            data_word_disparity <= "0000";
+         else
+            data_word_disparity  <= "1100" + data_word(0) + data_word(1) + data_word(2) + data_word(3)
                                     + data_word(4) + data_word(5) + data_word(6) + data_word(7);
+         end if;
 
          data_word_reg        <= data_word;
 
@@ -112,7 +120,7 @@ begin
    process(clk)
    begin
       if rising_edge(clk) then
-         if blank_reg = '1' then
+         if blank_reg = '1' or reset = '1' then
             -- In the control periods, all values have and have balanced bit count
             dc_bias <= (others => '0');
          else

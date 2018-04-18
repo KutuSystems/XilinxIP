@@ -58,10 +58,12 @@ use UNISIM.VComponents.all;
 library hdmi_display_v1_00_a;
 use hdmi_display_v1_00_a.frame_gen;
 use hdmi_display_v1_00_a.hdmi_tx;
+use hdmi_display_v1_00_a.test_pattern;
 
 entity hdmi_display is
    generic
    (
+      USE_TEST_PATTERN     : integer := 0;
       DEBUG_OUTPUTS        : integer := 0;
 
       -- Video frame parameters
@@ -92,13 +94,13 @@ entity hdmi_display is
       clk200               : in std_logic;
 
       -- AXI-Stream port from VDMA
-      s_axis_mm2s_aresetn	: in std_logic;
-      s_axis_mm2s_aclk	   : out std_logic;
-      s_axis_mm2s_tready	: out std_logic;
+      s_axis_mm2s_aresetn  : in std_logic;
+      s_axis_mm2s_aclk     : out std_logic;
+      s_axis_mm2s_tready   : out std_logic;
       s_axis_mm2s_tdata	   : in std_logic_vector(31 downto 0);
       s_axis_mm2s_tkeep	   : in std_logic_vector(3 downto 0);
       s_axis_mm2s_tlast	   : in std_logic;
-      s_axis_mm2s_tvalid	: in std_logic;
+      s_axis_mm2s_tvalid   : in std_logic;
 
       -- VDMA Signals
       fsync                : out std_logic;
@@ -129,16 +131,23 @@ end hdmi_display;
 
 architecture RTL of hdmi_display is
 
+   signal pxl_clk                   : std_logic;
+   signal locked                    : std_logic;
 
-   signal pxl_clk       : std_logic;
-   signal locked        : std_logic;
+   signal s_axis_mm2s_aresetn_sig   : std_logic;
+   signal s_axis_mm2s_tready_sig    : std_logic;
+   signal s_axis_mm2s_tdata_sig     : std_logic_vector(31 downto 0);
+   signal s_axis_mm2s_tkeep_sig     : std_logic_vector(3 downto 0);
+   signal s_axis_mm2s_tlast_sig     : std_logic;
+   signal s_axis_mm2s_tvalid_sig    : std_logic;
+   signal fsync_sig                 : std_logic;
 
-   signal hsync         : std_logic;
-   signal vsync         : std_logic;
-   signal de            : std_logic;
-   signal red           : std_logic_vector(7 downto 0);
-   signal green         : std_logic_vector(7 downto 0);
-   signal blue          : std_logic_vector(7 downto 0);
+   signal hsync                     : std_logic;
+   signal vsync                     : std_logic;
+   signal de                        : std_logic;
+   signal red                       : std_logic_vector(7 downto 0);
+   signal green                     : std_logic_vector(7 downto 0);
+   signal blue                      : std_logic_vector(7 downto 0);
 
 begin
 
@@ -177,14 +186,14 @@ begin
       locked            => locked,
 
       -- Ports of Axi Slave Bus Interface S_AXIS_MM2S
-      s_axis_aresetn    => s_axis_mm2s_aresetn,
-      s_axis_tready     => s_axis_mm2s_tready,
-      s_axis_tdata      => s_axis_mm2s_tdata,
-      s_axis_tstrb      => s_axis_mm2s_tkeep,
-      s_axis_tlast      => s_axis_mm2s_tlast,
-      s_axis_tvalid     => s_axis_mm2s_tvalid,
+      s_axis_aresetn    => s_axis_mm2s_aresetn_sig,
+      s_axis_tready     => s_axis_mm2s_tready_sig,
+      s_axis_tdata      => s_axis_mm2s_tdata_sig,
+      s_axis_tkeep      => s_axis_mm2s_tkeep_sig,
+      s_axis_tlast      => s_axis_mm2s_tlast_sig,
+      s_axis_tvalid     => s_axis_mm2s_tvalid_sig,
 
-      fsync             => fsync,
+      fsync             => fsync_sig,
       hsync             => hsync,
       vsync             => vsync,
       de                => de,
@@ -199,6 +208,45 @@ begin
       debug_vga_running => debug_vga_running
    );
 
+   ENABLE_TEST : if USE_TEST_PATTERN = 1 generate
+      test_pattern_1 : entity hdmi_display_v1_00_a.test_pattern
+      generic map
+      (
+      -- Video frame parameters
+         USR_HSIZE            => USR_HSIZE,
+         USR_VSIZE            => USR_VSIZE
+      )
+      port map
+      (
+         reset                => reset,
+         fsync                => fsync_sig,
+
+         -- simulating AXI-Stream port from VDMA
+         s_axis_mm2s_aresetn  => s_axis_mm2s_aresetn_sig,
+         s_axis_mm2s_aclk     => pxl_clk,
+         s_axis_mm2s_tready   => s_axis_mm2s_tready_sig,
+         s_axis_mm2s_tdata    => s_axis_mm2s_tdata_sig,
+         s_axis_mm2s_tkeep    => s_axis_mm2s_tkeep_sig,
+         s_axis_mm2s_tlast    => s_axis_mm2s_tlast_sig,
+         s_axis_mm2s_tvalid   => s_axis_mm2s_tvalid_sig
+      );
+
+      s_axis_mm2s_tready   <= '0';
+      fsync                <= '0';
+
+   end generate;
+
+   DISABLE_TEST : if USE_TEST_PATTERN = 0 generate
+      s_axis_mm2s_aresetn_sig <= s_axis_mm2s_aresetn;
+      s_axis_mm2s_tready      <= s_axis_mm2s_tready_sig;
+      s_axis_mm2s_tdata_sig   <= s_axis_mm2s_tdata;
+      s_axis_mm2s_tkeep_sig   <= s_axis_mm2s_tkeep;
+      s_axis_mm2s_tlast_sig   <= s_axis_mm2s_tlast;
+      s_axis_mm2s_tvalid_sig  <= s_axis_mm2s_tvalid;
+      fsync                   <= fsync_sig;
+   end generate;
+
+
    hdmi_tx_1 : entity hdmi_display_v1_00_a.hdmi_tx
    generic map
    (
@@ -207,29 +255,29 @@ begin
       CLK_DIVIDE     => CLK_DIVIDE
    )
    port map (
-      reset             => reset,
-      clk200            => clk200,
+      reset          => reset,
+      clk200         => clk200,
 
-      video_clk         => pxl_clk,
-      locked            => locked,
+      video_clk      => pxl_clk,
+      locked         => locked,
 
       -- VGA
-      hsync             => hsync,
-      vsync             => vsync,
-      de                => de,
-      red               => red,
-      green             => green,
-      blue              => blue,
+      hsync          => hsync,
+      vsync          => vsync,
+      de             => de,
+      red            => red,
+      green          => green,
+      blue           => blue,
 
       -- HDMI output
-      HDMI_CLK_P        => HDMI_CLK_P,
-      HDMI_CLK_N        => HDMI_CLK_N,
-      HDMI_D2_P         => HDMI_D2_P,
-      HDMI_D2_N         => HDMI_D2_N,
-      HDMI_D1_P         => HDMI_D1_P,
-      HDMI_D1_N         => HDMI_D1_N,
-      HDMI_D0_P         => HDMI_D0_P,
-      HDMI_D0_N         => HDMI_D0_N
+      HDMI_CLK_P     => HDMI_CLK_P,
+      HDMI_CLK_N     => HDMI_CLK_N,
+      HDMI_D2_P      => HDMI_D2_P,
+      HDMI_D2_N      => HDMI_D2_N,
+      HDMI_D1_P      => HDMI_D1_P,
+      HDMI_D1_N      => HDMI_D1_N,
+      HDMI_D0_P      => HDMI_D0_P,
+      HDMI_D0_N      => HDMI_D0_N
    );
 
 end RTL;

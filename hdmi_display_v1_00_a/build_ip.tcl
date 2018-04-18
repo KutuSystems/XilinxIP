@@ -46,6 +46,7 @@ add_files -norecurse sources/TMDS_encoder.vhd
 add_files -norecurse sources/hdmi_tx.vhd
 add_files -norecurse sources/serializer.vhd
 add_files -norecurse sources/frame_gen.vhd
+add_files -norecurse sources/test_pattern.vhd
 
 set_property library hdmi_display_v1_00_a [get_files sources/hdmi_display.vhd]
 set_property library hdmi_display_v1_00_a [get_files sources/clock_gen_bufio.vhd]
@@ -53,6 +54,7 @@ set_property library hdmi_display_v1_00_a [get_files sources/TMDS_encoder.vhd]
 set_property library hdmi_display_v1_00_a [get_files sources/serializer.vhd]
 set_property library hdmi_display_v1_00_a [get_files sources/hdmi_tx.vhd]
 set_property library hdmi_display_v1_00_a [get_files sources/frame_gen.vhd]
+set_property library hdmi_display_v1_00_a [get_files sources/test_pattern.vhd]
 
 # Set 'sources_1' fileset properties
 set obj [get_filesets sources_1]
@@ -79,10 +81,11 @@ if {[string equal [get_filesets sim_1] ""]} {
 # Add files to 'sim_1' fileset
 set obj [get_filesets sim_1]
 # Empty (no sources present)
+add_files -norecurse sources/hdmi_display_tb1.vhd
 
 # Set 'sim_1' fileset properties
 set obj [get_filesets sim_1]
-set_property "top" "hdmi_display" $obj
+set_property "top" "testbench" $obj
 
 # Create 'synth_1' run (if not found)
 if {[string equal [get_runs synth_1] ""]} {

@@ -80,6 +80,7 @@ architecture RTL of clock_gen is
    signal clk742_buf    : std_logic;
    signal pll_locked    : std_logic;
    signal locked_n      : std_logic;
+--   signal do_reg        : std_logic_vector(15 downto 0);
 
 begin
 
@@ -90,7 +91,7 @@ begin
       CLKFBOUT_MULT        => PLL_MULTIPLY,
       CLKFBOUT_PHASE       => 0.000000,
       CLKIN1_PERIOD        => 5.000000,
-      CLKIN2_PERIOD        => 0.000000,
+      CLKIN2_PERIOD        => 5.000000,
       CLKOUT0_DIVIDE       => CLK_DIVIDE,
       CLKOUT0_DUTY_CYCLE   => 0.500000,
       CLKOUT0_PHASE        => 0.000000,
@@ -121,7 +122,7 @@ begin
       CLKFBOUT          => clkfb,
       CLKIN1            => clk200,
       CLKIN2            => '0',
-      CLKINSEL          => '0',
+      CLKINSEL          => '1',
       CLKOUT0           => clk742_buf,
       CLKOUT1           => open,
       CLKOUT2           => open,
@@ -132,7 +133,7 @@ begin
       DCLK              => '0',
       DEN               => '0',
       DI(15 downto 0)   => X"0000",
-     -- DO(15 downto 0)   => open,
+--      DO(15 downto 0)   => do_reg,
       DRDY              => open,
       DWE               => '0',
       LOCKED            => pll_locked,
@@ -160,10 +161,10 @@ begin
    )
    port map
    (
-      O     => clk148,
+      O     => bufr_clk,
       CE    => '1',
       CLR   => locked_n,
-      I     => bufr_clk
+      I     => clk742_buf
    );
 
    clk148 <= bufr_clk;
