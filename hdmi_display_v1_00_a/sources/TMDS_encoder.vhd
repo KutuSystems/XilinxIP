@@ -26,6 +26,12 @@ end TMDS_encoder;
 
 architecture Behavioral of TMDS_encoder is
 
+   constant NEITHER_HSYNC_OR_VSYNC  : std_logic_vector(9 downto 0) := "1101010100";
+   constant HSYNC_NO_VSYNC          : std_logic_vector(9 downto 0) := "0010101011";
+   constant NO_HSYNC_VSYNC          : std_logic_vector(9 downto 0) := "0101010100";
+   constant BOTH_HSYNC_AND_VSYNC    : std_logic_vector(9 downto 0) := "1010101011";
+
+
    signal xored               : std_logic_vector(8 downto 0);
    signal xnored              : std_logic_vector(8 downto 0);
    signal xored_reg           : std_logic_vector(8 downto 0);
@@ -146,10 +152,10 @@ begin
          if blank_reg = '1' then
             -- In the control periods, all values have and have balanced bit count
             case c_reg is
-               when "00"   => encoded <= "1101010100";
-               when "01"   => encoded <= "0010101011";
-               when "10"   => encoded <= "0101010100";
-               when others => encoded <= "1010101011";
+               when "00"   => encoded <= NEITHER_HSYNC_OR_VSYNC;
+               when "01"   => encoded <= HSYNC_NO_VSYNC;
+               when "10"   => encoded <= NO_HSYNC_VSYNC;
+               when others => encoded <= BOTH_HSYNC_AND_VSYNC;
             end case;
          else
             if dc_bias = "0000" or data_word_disparity = 0 then

@@ -162,7 +162,7 @@ begin
 
    -- TMDS Encoders
    c     <= vsync & hsync;
-   blank <= de;
+   blank <= not de;
 
 	TMDS_encoder_red: entity hdmi_display_v1_00_a.TMDS_encoder
    port map

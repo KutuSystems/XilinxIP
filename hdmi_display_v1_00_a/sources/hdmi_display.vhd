@@ -71,11 +71,11 @@ entity hdmi_display is
       USR_VSIZE            : integer := 1080;
       USR_HFRONT_PORCH     : integer := 88;
       USR_HBACK_PORCH      : integer := 148;
-      USR_HPOLARITY        : integer := 0;
+      USR_HPOLARITY        : integer := 1;
       USR_HMAX             : integer := 2200;
       USR_VFRONT_PORCH     : integer := 4;
       USR_VBACK_PORCH      : integer := 36;
-      USR_VPOLARITY        : integer := 0;
+      USR_VPOLARITY        : integer := 1;
       USR_VMAX             : integer := 1125;
 
       -- default colour

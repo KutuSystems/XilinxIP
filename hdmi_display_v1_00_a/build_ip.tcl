@@ -283,6 +283,10 @@ set_property layout {vertical} [ipgui::get_guiparamspec -name "DEBUG_OUTPUTS" -c
 set_property value_validation_type pairs [ipx::get_user_parameters DEBUG_OUTPUTS -of_objects [ipx::current_core]]
 set_property value_validation_pairs {Disabled 0 Enabled 1} [ipx::get_user_parameters DEBUG_OUTPUTS -of_objects [ipx::current_core]]
 
+set_property widget {comboBox} [ipgui::get_guiparamspec -name "USE_TEST_PATTERN" -component [ipx::current_core] ]
+set_property value_validation_type pairs [ipx::get_user_parameters USE_TEST_PATTERN -of_objects [ipx::current_core]]
+set_property value_validation_pairs {{Enable Test Pattern} 1 {Enable External Data Input} 0} [ipx::get_user_parameters USE_TEST_PATTERN -of_objects [ipx::current_core]]
+
 set_property enablement_value false [ipx::get_user_parameters USR_HPOLARITY -of_objects [ipx::current_core]]
 ipgui::remove_param -component [ipx::current_core] [ipgui::get_guiparamspec -name "USR_HPOLARITY" -component [ipx::current_core]]
 set_property enablement_value false [ipx::get_user_parameters USR_VPOLARITY -of_objects [ipx::current_core]]

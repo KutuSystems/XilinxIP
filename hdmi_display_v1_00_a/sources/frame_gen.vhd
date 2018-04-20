@@ -206,7 +206,7 @@ begin
          h_sync_reg <= '0';
       elsif rising_edge(pxl_clk) then
          if vga_running = '1' then
-            if (h_count >= USER_HFRONT_PORCH) and (h_count < USER_HBACK_PORCH) then
+            if (h_count >= USER_HSIZE + USER_HFRONT_PORCH) and (h_count < USER_HMAX - USER_HBACK_PORCH) then
                h_sync_reg <= USER_HPOLARITY;
             else
                h_sync_reg <= not(USER_HPOLARITY);
@@ -223,7 +223,7 @@ begin
          v_sync_reg <= '0';
       elsif (rising_edge(pxl_clk)) then
          if vga_running = '1' then
-            if (v_count >= USER_VFRONT_PORCH) and (v_count < USER_VBACK_PORCH) then
+            if (v_count >= USER_VSIZE + USER_VFRONT_PORCH) and (v_count < USER_VMAX - USER_VBACK_PORCH) then
                v_sync_reg <= USER_VPOLARITY;
             else
                v_sync_reg <= not(USER_VPOLARITY);
@@ -277,14 +277,14 @@ begin
          else
 
             -- video dv is actual data reads
-            if (v_count < USER_VSIZE -1) and (h_count < USER_HSIZE - 1) then
+            if (v_count < USER_VSIZE) and (h_count < USER_HSIZE) then
                video_dv <= '1';
             else
                video_dv <= '0';
             end if;
 
             -- s_axis_tready has 4 extra lines to dump extra data
-            if (v_count < USER_VSIZE + 3) and (h_count < USER_HSIZE - 1) then
+            if (v_count < USER_VSIZE + 3) and (h_count < USER_HSIZE) then
                s_axis_tready <= '1';
             else
                s_axis_tready <= '0';

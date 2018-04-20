@@ -86,17 +86,17 @@ begin
       USR_VSIZE            => 108,
       USR_HFRONT_PORCH     => 8,
       USR_HBACK_PORCH      => 14,
-      USR_HPOLARITY        => 0,
+      USR_HPOLARITY        => 1,
       USR_HMAX             => 240,
       USR_VFRONT_PORCH     => 4,
       USR_VBACK_PORCH      => 8,
-      USR_VPOLARITY        => 0,
+      USR_VPOLARITY        => 1,
       USR_VMAX             => 125,
 
       -- default colour
       USR_RED              => 85,
       USR_GREEN            => 255,
-      USR_BLUE             => 0,
+      USR_BLUE             => 1,
 
       -- PLLE2 parameters
       PLL_MULTIPLY         => 52,
