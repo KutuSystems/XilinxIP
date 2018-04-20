@@ -105,11 +105,11 @@ begin
                s_axis_mm2s_tvalid_sig <= '0';
             end if;
 
-            -- red increments horizontally
+            -- blue increments horizontally
             if fsync = '1' or (s_axis_mm2s_tready = '1' and s_axis_mm2s_tvalid_sig = '1' and last_h_count = '1') then
-               red <= X"00";
+               blue <= X"00";
             elsif s_axis_mm2s_tready = '1' and s_axis_mm2s_tvalid_sig = '1' then
-               red <= red + 1;
+               blue <= blue + 1;
             end if;
 
             -- green increments vertically
@@ -119,11 +119,11 @@ begin
                green <= green + 1;
             end if;
 
-            -- blue increments with red overflow
+            -- red increments with blue overflow
             if fsync = '1' then
-               blue <= X"00";
+               red <= X"00";
             elsif s_axis_mm2s_tready = '1' and s_axis_mm2s_tvalid_sig = '1' and (last_h_count = '1' or red = X"FF") then
-               blue <= blue + 1;
+               red <= red + 1;
             end if;
          end if;
 

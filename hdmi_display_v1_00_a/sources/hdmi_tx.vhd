@@ -65,42 +65,46 @@ entity hdmi_tx is
    generic
    (
       -- PLLE2 parameters
-      PLL_MULTIPLY   : integer := 52;
-      PLL_DIVIDE     : integer := 7;
-      CLK_DIVIDE     : integer := 2
+      PLL_MULTIPLY      : integer := 52;
+      PLL_DIVIDE        : integer := 7;
+      CLK_DIVIDE        : integer := 2
    );
    port
    (
-      reset          : in std_logic;
-      clk200         : in std_logic;
+      reset             : in  std_logic;
+      clk200            : in  std_logic;
 
-      video_clk      : out std_logic;
-      locked         : out std_logic;
+      video_clk         : out std_logic;
+      locked            : out std_logic;
 
       --VGA input frame
-      hsync          : in std_logic;
-      vsync          : in std_logic;
-      de             : in std_logic;
-      red            : in std_logic_vector(7 downto 0);
-      green          : in std_logic_vector(7 downto 0);
-      blue           : in std_logic_vector(7 downto 0);
+      hsync             : in  std_logic;
+      vsync             : in  std_logic;
+      de                : in  std_logic;
+      red               : in  std_logic_vector(7 downto 0);
+      green             : in  std_logic_vector(7 downto 0);
+      blue              : in  std_logic_vector(7 downto 0);
+
+      debug_tmds_red    : out std_logic_vector(9 downto 0);
+      debug_tmds_green  : out std_logic_vector(9 downto 0);
+      debug_tmds_blue   : out std_logic_vector(9 downto 0);
 
       --HDMI output stream
-      HDMI_CLK_P     : out  std_logic;
-      HDMI_CLK_N     : out  std_logic;
-      HDMI_D2_P      : out  std_logic;
-      HDMI_D2_N      : out  std_logic;
-      HDMI_D1_P      : out  std_logic;
-      HDMI_D1_N      : out  std_logic;
-      HDMI_D0_P      : out  std_logic;
-      HDMI_D0_N      : out  std_logic
+      HDMI_CLK_P        : out std_logic;
+      HDMI_CLK_N        : out std_logic;
+      HDMI_D2_P         : out std_logic;
+      HDMI_D2_N         : out std_logic;
+      HDMI_D1_P         : out std_logic;
+      HDMI_D1_N         : out std_logic;
+      HDMI_D0_P         : out std_logic;
+      HDMI_D0_N         : out std_logic
    );
 end hdmi_tx;
 
 architecture RTL of hdmi_tx is
 
-   signal PXL_CLK_1X     : std_logic;
-   signal PXL_CLK_5X     : std_logic;
+   signal PXL_CLK_1X    : std_logic;
+   signal PXL_CLK_5X    : std_logic;
 
    signal clk           : std_logic;
    signal pll_locked    : std_logic := '0';
@@ -117,6 +121,10 @@ architecture RTL of hdmi_tx is
 begin
 
    video_clk <= clk;
+
+   debug_tmds_red    <= tmds_red;
+   debug_tmds_green  <= tmds_green;
+   debug_tmds_blue   <= tmds_blue;
 
    clock_gen_1 : entity hdmi_display_v1_00_a.clock_gen
    generic map

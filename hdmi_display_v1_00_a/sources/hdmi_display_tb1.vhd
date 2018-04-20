@@ -62,6 +62,9 @@ FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
    signal HDMI_D0_N           :  std_logic;
 
    -- debug signals
+   signal debug_tmds_red      : std_logic_vector(9 downto 0);
+   signal debug_tmds_green    : std_logic_vector(9 downto 0);
+   signal debug_tmds_blue     : std_logic_vector(9 downto 0);
    signal debug_hcount        : std_logic_vector(11 downto 0);
    signal debug_vcount        : std_logic_vector(11 downto 0);
    signal debug_vga_active    : std_logic;
@@ -72,6 +75,11 @@ FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
    signal debug_red           : std_logic_vector(7 downto 0);
    signal debug_green         : std_logic_vector(7 downto 0);
    signal debug_blue          : std_logic_vector(7 downto 0);
+   signal debug_c             : std_logic_vector(1 downto 0);
+   signal debug_blank         : std_logic;
+
+   signal test_blue           : std_logic_vector(7 downto 0);
+   signal test_tmds_blue      : std_logic_vector(9 downto 0);
 
    signal errors              : integer;
 
@@ -123,6 +131,10 @@ begin
       HDMI_D1_N            => HDMI_D1_N,
       HDMI_D0_P            => HDMI_D0_P,
       HDMI_D0_N            => HDMI_D0_N,
+
+      debug_tmds_red       => debug_tmds_red,
+      debug_tmds_green     => debug_tmds_green,
+      debug_tmds_blue      => debug_tmds_blue,
       debug_hcount         => debug_hcount,
       debug_vcount         => debug_vcount,
       debug_vga_active     => debug_vga_active,
@@ -135,28 +147,30 @@ begin
       debug_blue           => debug_blue
    );
 
-      test_pattern_1 : entity hdmi_display_v1_00_a.test_pattern
-      generic map
-      (
-      -- Video frame parameters
-         USR_HSIZE            => 192,
-         USR_VSIZE            => 108
-      )
-      port map
-      (
-         reset                => reset,
-         fsync                => fsync,
+   test_pattern_1 : entity hdmi_display_v1_00_a.test_pattern
+   generic map
+   (
+         -- Video frame parameters
+      USR_HSIZE            => 192,
+      USR_VSIZE            => 108
+   )
+   port map
+   (
+      reset                => reset,
+      fsync                => fsync,
 
          -- simulating AXI-Stream port from VDMA
-         s_axis_mm2s_aresetn  => s_axis_mm2s_aresetn,
-         s_axis_mm2s_aclk     => s_axis_mm2s_aclk,
-         s_axis_mm2s_tready   => s_axis_mm2s_tready,
-         s_axis_mm2s_tdata    => s_axis_mm2s_tdata,
-         s_axis_mm2s_tkeep    => s_axis_mm2s_tkeep,
-         s_axis_mm2s_tlast    => s_axis_mm2s_tlast,
-         s_axis_mm2s_tvalid   => s_axis_mm2s_tvalid
-      );
+      s_axis_mm2s_aresetn  => s_axis_mm2s_aresetn,
+      s_axis_mm2s_aclk     => s_axis_mm2s_aclk,
+      s_axis_mm2s_tready   => s_axis_mm2s_tready,
+      s_axis_mm2s_tdata    => s_axis_mm2s_tdata,
+      s_axis_mm2s_tkeep    => s_axis_mm2s_tkeep,
+      s_axis_mm2s_tlast    => s_axis_mm2s_tlast,
+      s_axis_mm2s_tvalid   => s_axis_mm2s_tvalid
+   );
 
+   debug_c     <= debug_vsync & debug_hsync;
+   debug_blank <= not debug_de;
 
    process  -- process for clk
    begin
@@ -169,6 +183,72 @@ begin
    end process;
 
 
+   -- generate test data
+   process (s_axis_mm2s_aclk)
+   begin
+      if rising_edge(s_axis_mm2s_aclk) then
+         if reset = '1' then
+            test_blue      <= X"00";
+         else
+
+            -- blue increments horizontally
+            if debug_hsync = '1' or debug_vga_active = '0' then
+               test_blue <= X"00";
+            elsif debug_de = '1' then
+               test_blue <= test_blue + 1;
+            end if;
+         end if;
+      end if;
+   end process;
+
+   TMDS_encoder_blue: entity hdmi_display_v1_00_a.TMDS_encoder
+   port map
+   (
+      reset    => reset,
+      clk      => s_axis_mm2s_aclk,
+      data     => test_blue,
+      c        => debug_c,
+      blank    => debug_blank,
+      encoded  => test_tmds_blue
+   );
+
+
+
+   -- process for comparing output stream (blue only)
+   process
+   begin
+      errors <= 0;
+
+      wait for tCK;
+
+      -- wait for pll lock
+      while  debug_vga_running = '0' loop
+         wait for tCK;
+      end loop;
+
+      -- wait until pipeline clears
+      wait for 5*tCK;
+      wait until s_axis_mm2s_aclk = '1';
+      wait until s_axis_mm2s_aclk = '0';
+      loop
+
+         if debug_de = '1' then
+            if test_blue /= debug_blue then
+               errors <= errors + 1;
+            end if;
+         end if;
+
+         if test_tmds_blue /= debug_tmds_blue then
+            errors <= errors + 1;
+         end if;
+
+         wait until s_axis_mm2s_aclk = '1';
+         wait until s_axis_mm2s_aclk = '0';
+
+      end loop;
+   end process;
+
+
 
 
    process  -- process for generating test
@@ -176,15 +256,19 @@ begin
    variable tx_loc   : LINE;
 
    begin
-      errors <= 0;
 
       reset <= '1';
       wait for 10 * tCK;
       reset <= '0';
 
-      wait for 10000 * tCK;
+      -- test over 3 frames
+      wait until fsync = '1';
+      wait until fsync = '0';
+      wait until fsync = '1';
+      wait until fsync = '0';
+      wait until fsync = '1';
+      wait until fsync = '0';
 
-      wait;
 
       if (errors = 0) then
          ASSERT (FALSE) REPORT

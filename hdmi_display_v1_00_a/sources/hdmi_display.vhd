@@ -116,6 +116,9 @@ entity hdmi_display is
       HDMI_D0_N            : out  std_logic;
 
       -- debug signals
+      debug_tmds_red       : out std_logic_vector(9 downto 0);
+      debug_tmds_green     : out std_logic_vector(9 downto 0);
+      debug_tmds_blue      : out std_logic_vector(9 downto 0);
       debug_hcount         : out std_logic_vector(11 downto 0);
       debug_vcount         : out std_logic_vector(11 downto 0);
       debug_vga_active     : out std_logic;
@@ -250,34 +253,37 @@ begin
    hdmi_tx_1 : entity hdmi_display_v1_00_a.hdmi_tx
    generic map
    (
-      PLL_MULTIPLY   => PLL_MULTIPLY,
-      PLL_DIVIDE     => PLL_DIVIDE,
-      CLK_DIVIDE     => CLK_DIVIDE
+      PLL_MULTIPLY      => PLL_MULTIPLY,
+      PLL_DIVIDE        => PLL_DIVIDE,
+      CLK_DIVIDE        => CLK_DIVIDE
    )
    port map (
-      reset          => reset,
-      clk200         => clk200,
+      reset             => reset,
+      clk200            => clk200,
 
-      video_clk      => pxl_clk,
-      locked         => locked,
+      video_clk         => pxl_clk,
+      locked            => locked,
 
       -- VGA
-      hsync          => hsync,
-      vsync          => vsync,
-      de             => de,
-      red            => red,
-      green          => green,
-      blue           => blue,
+      hsync             => hsync,
+      vsync             => vsync,
+      de                => de,
+      red               => red,
+      green             => green,
+      blue              => blue,
 
+      debug_tmds_red    => debug_tmds_red,
+      debug_tmds_green  => debug_tmds_green,
+      debug_tmds_blue   => debug_tmds_blue,
       -- HDMI output
-      HDMI_CLK_P     => HDMI_CLK_P,
-      HDMI_CLK_N     => HDMI_CLK_N,
-      HDMI_D2_P      => HDMI_D2_P,
-      HDMI_D2_N      => HDMI_D2_N,
-      HDMI_D1_P      => HDMI_D1_P,
-      HDMI_D1_N      => HDMI_D1_N,
-      HDMI_D0_P      => HDMI_D0_P,
-      HDMI_D0_N      => HDMI_D0_N
+      HDMI_CLK_P        => HDMI_CLK_P,
+      HDMI_CLK_N        => HDMI_CLK_N,
+      HDMI_D2_P         => HDMI_D2_P,
+      HDMI_D2_N         => HDMI_D2_N,
+      HDMI_D1_P         => HDMI_D1_P,
+      HDMI_D1_N         => HDMI_D1_N,
+      HDMI_D0_P         => HDMI_D0_P,
+      HDMI_D0_N         => HDMI_D0_N
    );
 
 end RTL;
