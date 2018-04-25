@@ -12,7 +12,9 @@
 -- This module generates a 742.5MHz clock from a 200MHz
 -- reference clock.  Actual output frequency is 742.85MHz.
 -- This results in a frame rate of 60.02Hz. Clock jitter is
--- 99ps, or about 0.16UI @ 1.485GHz
+-- 99ps, or about 0.16UI @ 1.485GHz.  The clock uses a BUFIO
+-- which is out of spec, so will cause a timing violation, but
+-- it still works.
 --
 --------------------------------------------------------------
 --
@@ -55,28 +57,26 @@ entity clock_gen is
    generic
    (
       -- PLLE2 parameters
-      PLL_MULTIPLY     : integer := 52;
-      PLL_DIVIDE       : integer := 7;
-      CLK_DIVIDE       : integer := 2
+      PLL_MULTIPLY      : integer := 52;
+      PLL_DIVIDE        : integer := 7;
+      CLK_DIVIDE        : integer := 2
    );
    port
    (
-      reset                : in  std_logic;
-      clk200               : in  std_logic;
+      reset             : in  std_logic;
+      clk200            : in  std_logic;
 
-      clk742               : out std_logic;
-      clk148               : out std_logic;
-      clk                  : out std_logic;
-      locked               : out std_logic
+      clk742            : out std_logic;
+      clk148            : out std_logic;
+      clk               : out std_logic;
+      locked            : out std_logic
    );
 end clock_gen;
 
 architecture RTL of clock_gen is
 
-   constant ZERO_VAL             : std_logic := '0';
-   constant ONE_VAL              : std_logic := '1';
-
-   signal   clkfb                : std_logic;
+   signal clkfb         : std_logic;
+   signal clk_buf       : std_logic;
 
 begin
 
@@ -87,14 +87,14 @@ begin
       CLKFBOUT_MULT        => PLL_MULTIPLY,
       CLKFBOUT_PHASE       => 0.000000,
       CLKIN1_PERIOD        => 5.000000,
-      CLKIN2_PERIOD        => 0.000000,
+      CLKIN2_PERIOD        => 5.000000,
       CLKOUT0_DIVIDE       => CLK_DIVIDE,
       CLKOUT0_DUTY_CYCLE   => 0.500000,
       CLKOUT0_PHASE        => 0.000000,
-      CLKOUT1_DIVIDE       => 1,
+      CLKOUT1_DIVIDE       => 5*CLK_DIVIDE,
       CLKOUT1_DUTY_CYCLE   => 0.500000,
       CLKOUT1_PHASE        => 0.000000,
-      CLKOUT2_DIVIDE       => 1,
+      CLKOUT2_DIVIDE       => 5*CLK_DIVIDE,
       CLKOUT2_DUTY_CYCLE   => 0.500000,
       CLKOUT2_PHASE        => 0.000000,
       CLKOUT3_DIVIDE       => 1,
@@ -118,10 +118,10 @@ begin
       CLKFBOUT          => clkfb,
       CLKIN1            => clk200,
       CLKIN2            => '0',
-      CLKINSEL          => '0',
-      CLKOUT0           => clk742_buf,
-      CLKOUT1           => open,
-      CLKOUT2           => open,
+      CLKINSEL          => '1',
+      CLKOUT0           => clk742,
+      CLKOUT1           => clk148,
+      CLKOUT2           => clk_buf,
       CLKOUT3           => open,
       CLKOUT4           => open,
       CLKOUT5           => open,
@@ -129,7 +129,7 @@ begin
       DCLK              => '0',
       DEN               => '0',
       DI(15 downto 0)   => X"0000",
-     -- DO(15 downto 0)   => open,
+--      DO(15 downto 0)   => do_reg,
       DRDY              => open,
       DWE               => '0',
       LOCKED            => locked,
@@ -137,29 +137,12 @@ begin
       RST               => reset
    );
 
-   BUFIO_inst : BUFIO
+   BUFG_inst : BUFG
    port map
    (
-      O     => clk742,
-      I     => clk742_buf
+      O     => clk,
+      I     => clk_buf
    -- 1-bit input: Clock input (connect to an IBUF or BUFMR).
    );
-
-   BUFR_inst : BUFR
-   generic map
-   (
-      BUFR_DIVIDE => "5",   -- Values: "BYPASS, 1, 2, 3, 4, 5, 6, 7, 8"
-      SIM_DEVICE => "7SERIES"  -- Must be set to "7SERIES"
-   )
-   port map
-   (
-      O     => clk148,
-      CE    => '1',
-      CLR   => locked_n,
-      I     => bufr_clk
-   );
-
-   clk148 <= bufr_clk;
-   clk    <= bufr_clk;
 
 end RTL;

@@ -34,10 +34,10 @@ architecture testbench_arch of testbench is
 FILE RESULTS: TEXT OPEN WRITE_MODE IS "results.txt";
 
 
-   constant tCK            : time   := 5000 ps;
+   constant tCK            : time   := 8000 ps;
 
    signal reset                : std_logic;
-   signal clk200               : std_logic;
+   signal clk125               : std_logic;
 
    -- AXI-Stream port from VDMA
    signal s_axis_mm2s_aresetn	: std_logic;
@@ -104,17 +104,12 @@ begin
       -- default colour
       USR_RED              => 85,
       USR_GREEN            => 255,
-      USR_BLUE             => 1,
-
-      -- PLLE2 parameters
-      PLL_MULTIPLY         => 52,
-      PLL_DIVIDE           => 7,
-      CLK_DIVIDE           => 2
+      USR_BLUE             => 1
    )
    port map
    (
       reset                => reset,
-      clk200               => clk200,
+      clk125               => clk125,
       s_axis_mm2s_aresetn	=> s_axis_mm2s_aresetn,
       s_axis_mm2s_aclk	   => s_axis_mm2s_aclk,
       s_axis_mm2s_tready	=> s_axis_mm2s_tready,
@@ -175,9 +170,9 @@ begin
    process  -- process for clk
    begin
       loop
-         clk200   <= '1';
+         clk125   <= '1';
          wait for tCK/2;
-         clk200   <= '0';
+         clk125   <= '0';
          wait for tCK/2;
       end loop;
    end process;

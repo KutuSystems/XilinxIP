@@ -65,14 +65,14 @@ entity hdmi_tx is
    generic
    (
       -- PLLE2 parameters
-      PLL_MULTIPLY      : integer := 52;
-      PLL_DIVIDE        : integer := 7;
-      CLK_DIVIDE        : integer := 2
+      PLL_MULTIPLY      : real      := 11.875;
+      PLL_DIVIDE        : integer   := 2;
+      CLK_DIVIDE        : integer   := 1
    );
    port
    (
       reset             : in  std_logic;
-      clk200            : in  std_logic;
+      clk125            : in  std_logic;
 
       video_clk         : out std_logic;
       locked            : out std_logic;
@@ -136,7 +136,7 @@ begin
    port map
    (
       reset    => reset,
-      clk200   => clk200,
+      clk125   => clk125,
 
       clk742   => PXL_CLK_5X,
       clk148   => PXL_CLK_1X,
@@ -144,9 +144,9 @@ begin
       locked   => pll_locked
    );
 
-   process (clk200)
+   process (clk125)
    begin
-      if rising_edge(clk200) then
+      if rising_edge(clk125) then
          if reset = '1' then
             reset200   <= '1';
          elsif reset_reg = '1' then

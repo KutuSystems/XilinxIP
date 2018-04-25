@@ -84,14 +84,14 @@ entity hdmi_display is
       USR_BLUE             : integer := 0;
 
       -- PLLE2 parameters
-      PLL_MULTIPLY         : integer := 52;
-      PLL_DIVIDE           : integer := 7;
-      CLK_DIVIDE           : integer := 2
+      PLL_MULTIPLY         : real    := 11.875;
+      PLL_DIVIDE           : integer := 2;
+      CLK_DIVIDE           : integer := 1
    );
    port
    (
       reset                : in std_logic;
-      clk200               : in std_logic;
+      clk125               : in std_logic;
 
       -- AXI-Stream port from VDMA
       s_axis_mm2s_aresetn  : in std_logic;
@@ -259,7 +259,7 @@ begin
    )
    port map (
       reset             => reset,
-      clk200            => clk200,
+      clk125            => clk125,
 
       video_clk         => pxl_clk,
       locked            => locked,

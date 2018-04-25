@@ -57,14 +57,14 @@ entity clock_gen is
    generic
    (
       -- PLLE2 parameters
-      PLL_MULTIPLY      : integer := 52;
-      PLL_DIVIDE        : integer := 7;
-      CLK_DIVIDE        : integer := 2
+      PLL_MULTIPLY      : real      := 11.875;
+      PLL_DIVIDE        : integer   := 2;
+      CLK_DIVIDE        : integer   := 1
    );
    port
    (
       reset             : in  std_logic;
-      clk200            : in  std_logic;
+      clk125            : in  std_logic;
 
       clk742            : out std_logic;
       clk148            : out std_logic;
@@ -84,73 +84,68 @@ architecture RTL of clock_gen is
 
 begin
 
-   plle2_adv_inst : PLLE2_ADV
-   generic map
-   (
-      BANDWIDTH            => "HIGH",
-      CLKFBOUT_MULT        => PLL_MULTIPLY,
-      CLKFBOUT_PHASE       => 0.000000,
-      CLKIN1_PERIOD        => 5.000000,
-      CLKIN2_PERIOD        => 5.000000,
-      CLKOUT0_DIVIDE       => CLK_DIVIDE,
-      CLKOUT0_DUTY_CYCLE   => 0.500000,
-      CLKOUT0_PHASE        => 0.000000,
+MMCME2_BASE_inst : MMCME2_BASE
+   generic map (
+      BANDWIDTH            => "OPTIMIZED",
+      DIVCLK_DIVIDE        => 2,
+      CLKFBOUT_MULT_F      => 11.875,
+      CLKFBOUT_PHASE       => 0.0,
+      CLKIN1_PERIOD        => 8.0,
+      CLKOUT0_DIVIDE_F     => 1.0,
       CLKOUT1_DIVIDE       => 1,
-      CLKOUT1_DUTY_CYCLE   => 0.500000,
-      CLKOUT1_PHASE        => 0.000000,
       CLKOUT2_DIVIDE       => 1,
-      CLKOUT2_DUTY_CYCLE   => 0.500000,
-      CLKOUT2_PHASE        => 0.000000,
       CLKOUT3_DIVIDE       => 1,
-      CLKOUT3_DUTY_CYCLE   => 0.500000,
-      CLKOUT3_PHASE        => 0.000000,
       CLKOUT4_DIVIDE       => 1,
-      CLKOUT4_DUTY_CYCLE   => 0.500000,
-      CLKOUT4_PHASE        => 0.000000,
       CLKOUT5_DIVIDE       => 1,
-      CLKOUT5_DUTY_CYCLE   => 0.500000,
-      CLKOUT5_PHASE        => 0.000000,
-      COMPENSATION         => "ZHOLD",
-      DIVCLK_DIVIDE        => PLL_DIVIDE,
-      REF_JITTER1          => 0.010000,
-      REF_JITTER2          => 0.010000,
-      STARTUP_WAIT         => "FALSE"
+      CLKOUT6_DIVIDE       => 1,
+      CLKOUT0_DUTY_CYCLE   => 0.5,
+      CLKOUT1_DUTY_CYCLE   => 0.5,
+      CLKOUT2_DUTY_CYCLE   => 0.5,
+      CLKOUT3_DUTY_CYCLE   => 0.5,
+      CLKOUT4_DUTY_CYCLE   => 0.5,
+      CLKOUT5_DUTY_CYCLE   => 0.5,
+      CLKOUT6_DUTY_CYCLE   => 0.5,
+      CLKOUT0_PHASE        => 0.0,
+      CLKOUT1_PHASE        => 0.0,
+      CLKOUT2_PHASE        => 0.0,
+      CLKOUT3_PHASE        => 0.0,
+      CLKOUT4_PHASE        => 0.0,
+      CLKOUT5_PHASE        => 0.0,
+      CLKOUT6_PHASE        => 0.0,
+      CLKOUT4_CASCADE      => FALSE,
+      REF_JITTER1          => 0.010,
+      STARTUP_WAIT         => FALSE
    )
-   port map
-   (
-      CLKFBIN           => clkfb,
-      CLKFBOUT          => clkfb,
-      CLKIN1            => clk200,
-      CLKIN2            => '0',
-      CLKINSEL          => '1',
-      CLKOUT0           => clk742_buf,
-      CLKOUT1           => open,
-      CLKOUT2           => open,
-      CLKOUT3           => open,
-      CLKOUT4           => open,
-      CLKOUT5           => open,
-      DADDR(6 downto 0) => "0000000",
-      DCLK              => '0',
-      DEN               => '0',
-      DI(15 downto 0)   => X"0000",
---      DO(15 downto 0)   => do_reg,
-      DRDY              => open,
-      DWE               => '0',
-      LOCKED            => pll_locked,
-      PWRDWN            => '0',
-      RST               => reset
+   port map (
+      -- Clock Outputs: 1-bit (each) output: User configurable clock outputs
+      CLKOUT0   => open,
+      CLKOUT0B  => open,
+      CLKOUT1   => clk742_buf,
+      CLKOUT1B  => open,
+      CLKOUT2   => open,
+      CLKOUT2B  => open,
+      CLKOUT3   => open,
+      CLKOUT3B  => open,
+      CLKOUT4   => open,
+      CLKOUT5   => open,
+      CLKOUT6   => open,
+      CLKFBOUT  => clkfb,
+      CLKFBOUTB => open,
+      LOCKED    => pll_locked,
+      CLKIN1    => clk125,
+      PWRDWN    => '0',
+      RST       => reset,
+      CLKFBIN   => clkfb
    );
 
    locked   <= pll_locked;
    locked_n <= not pll_locked;
-
 
    BUFIO_inst : BUFIO
    port map
    (
       O     => clk742,
       I     => clk742_buf
-   -- 1-bit input: Clock input (connect to an IBUF or BUFMR).
    );
 
    BUFR_inst : BUFR

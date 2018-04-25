@@ -83,6 +83,8 @@ set obj [get_filesets sim_1]
 # Empty (no sources present)
 add_files -norecurse sources/hdmi_display_tb1.vhd
 
+set_property used_in_synthesis false [get_files  /home/greg/github/XilinxIP/hdmi_display_v1_00_a/sources/hdmi_display_tb1.vhd]
+
 # Set 'sim_1' fileset properties
 set obj [get_filesets sim_1]
 set_property "top" "testbench" $obj
@@ -169,18 +171,21 @@ set_property enablement_dependency DEBUG_OUTPUTS==1 [ipx::get_ports debug_de -of
 set_property enablement_dependency DEBUG_OUTPUTS==1 [ipx::get_ports debug_red -of_objects [ipx::current_core]]
 set_property enablement_dependency DEBUG_OUTPUTS==1 [ipx::get_ports debug_green -of_objects [ipx::current_core]]
 set_property enablement_dependency DEBUG_OUTPUTS==1 [ipx::get_ports debug_blue -of_objects [ipx::current_core]]
+set_property enablement_dependency DEBUG_OUTPUTS==1 [ipx::get_ports debug_tmds_blue -of_objects [ipx::current_core]]
+set_property enablement_dependency DEBUG_OUTPUTS==1 [ipx::get_ports debug_tmds_red -of_objects [ipx::current_core]]
+set_property enablement_dependency DEBUG_OUTPUTS==1 [ipx::get_ports debug_tmds_green -of_objects [ipx::current_core]]
 
 ipgui::move_param -component [ipx::current_core] -order 0 [ipgui::get_guiparamspec -name "CLK_DIVIDE" -component [ipx::current_core]] -parent [ipgui::get_pagespec -name "PLL Configuration" -component [ipx::current_core]]
 ipgui::move_param -component [ipx::current_core] -order 0 [ipgui::get_guiparamspec -name "PLL_DIVIDE" -component [ipx::current_core]] -parent [ipgui::get_pagespec -name "PLL Configuration" -component [ipx::current_core]]
 ipgui::move_param -component [ipx::current_core] -order 0 [ipgui::get_guiparamspec -name "PLL_MULTIPLY" -component [ipx::current_core]] -parent [ipgui::get_pagespec -name "PLL Configuration" -component [ipx::current_core]]
-set_property display_name {PLL2E Multiply} [ipgui::get_guiparamspec -name "PLL_MULTIPLY" -component [ipx::current_core] ]
-set_property tooltip {PLL2E Multiply value} [ipgui::get_guiparamspec -name "PLL_MULTIPLY" -component [ipx::current_core] ]
+set_property display_name {MMCM Multiply} [ipgui::get_guiparamspec -name "PLL_MULTIPLY" -component [ipx::current_core] ]
+set_property tooltip {MMCM Multiply value} [ipgui::get_guiparamspec -name "PLL_MULTIPLY" -component [ipx::current_core] ]
 set_property widget {textEdit} [ipgui::get_guiparamspec -name "PLL_MULTIPLY" -component [ipx::current_core] ]
 set_property value_validation_type range_long [ipx::get_user_parameters PLL_MULTIPLY -of_objects [ipx::current_core]]
-set_property value_validation_range_minimum 2 [ipx::get_user_parameters PLL_MULTIPLY -of_objects [ipx::current_core]]
-set_property value_validation_range_maximum 64 [ipx::get_user_parameters PLL_MULTIPLY -of_objects [ipx::current_core]]
-set_property display_name {PLL2E Divide} [ipgui::get_guiparamspec -name "PLL_DIVIDE" -component [ipx::current_core] ]
-set_property tooltip {PLL Divide value} [ipgui::get_guiparamspec -name "PLL_DIVIDE" -component [ipx::current_core] ]
+set_property value_validation_range_minimum 2.0 [ipx::get_user_parameters PLL_MULTIPLY -of_objects [ipx::current_core]]
+set_property value_validation_range_maximum 64.0 [ipx::get_user_parameters PLL_MULTIPLY -of_objects [ipx::current_core]]
+set_property display_name {MMCM Divide} [ipgui::get_guiparamspec -name "PLL_DIVIDE" -component [ipx::current_core] ]
+set_property tooltip {MMCM Divide value} [ipgui::get_guiparamspec -name "PLL_DIVIDE" -component [ipx::current_core] ]
 set_property widget {textEdit} [ipgui::get_guiparamspec -name "PLL_DIVIDE" -component [ipx::current_core] ]
 set_property value_validation_type range_long [ipx::get_user_parameters PLL_DIVIDE -of_objects [ipx::current_core]]
 set_property value_validation_range_minimum 1 [ipx::get_user_parameters PLL_DIVIDE -of_objects [ipx::current_core]]
