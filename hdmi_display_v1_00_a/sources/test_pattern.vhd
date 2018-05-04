@@ -46,15 +46,16 @@ architecture RTL of test_pattern is
    signal last_h_count           : std_logic := '0';
    signal last_v_count           : std_logic := '0';
    signal s_axis_mm2s_tvalid_sig : std_logic := '0';
-   signal red                    : std_logic_vector(7 downto 0) := (others =>'0');
-   signal green                  : std_logic_vector(7 downto 0) := (others =>'0');
+   --signal red                    : std_logic_vector(7 downto 0) := (others =>'0');
+   signal green                  : std_logic_vector(9 downto 0) := (others =>'0');
    signal blue                   : std_logic_vector(7 downto 0) := (others =>'0');
 
 begin
 
    s_axis_mm2s_aresetn  <= not reset;
    s_axis_mm2s_tvalid   <= s_axis_mm2s_tvalid_sig;
-   s_axis_mm2s_tdata	   <= X"00" & red & green & blue;
+--   s_axis_mm2s_tdata	   <= X"00" & red & green & blue;
+   s_axis_mm2s_tdata	   <= X"00" & green(9 downto 2) & green(7 downto 0) & blue;
    s_axis_mm2s_tkeep	   <= "1111";
    s_axis_mm2s_tlast	   <= '0';
 
@@ -68,9 +69,9 @@ begin
             v_count                 <= (others =>'0');
             last_v_count            <= '0';
             s_axis_mm2s_tvalid_sig  <= '0';
-            red                     <= X"00";
-            green                   <= X"00";
-            blue                    <= X"00";
+           -- red                     <= X"00";
+            green                   <= (others =>'0');
+            blue                    <= (others =>'0');
          else
 
             if fsync = '1' or (s_axis_mm2s_tready = '1' and s_axis_mm2s_tvalid_sig = '1' and last_h_count = '1') then
@@ -107,24 +108,24 @@ begin
 
             -- blue increments horizontally
             if fsync = '1' or (s_axis_mm2s_tready = '1' and s_axis_mm2s_tvalid_sig = '1' and last_h_count = '1') then
-               blue <= X"00";
+               blue <= (others =>'0');
             elsif s_axis_mm2s_tready = '1' and s_axis_mm2s_tvalid_sig = '1' then
                blue <= blue + 1;
             end if;
 
             -- green increments vertically
             if fsync = '1' then
-               green <= X"00";
+               green <= (others =>'0');
             elsif s_axis_mm2s_tready = '1' and s_axis_mm2s_tvalid_sig = '1' and last_h_count = '1' then
                green <= green + 1;
             end if;
 
             -- red increments with blue overflow
-            if fsync = '1' then
-               red <= X"00";
-            elsif s_axis_mm2s_tready = '1' and s_axis_mm2s_tvalid_sig = '1' and (last_h_count = '1' or red = X"FF") then
-               red <= red + 1;
-            end if;
+      --      if fsync = '1' then
+      --         red <= (others =>'0');
+      --      elsif s_axis_mm2s_tready = '1' and s_axis_mm2s_tvalid_sig = '1' and (last_h_count = '1' or red = X"FF") then
+      --         red <= red + 1;
+      --      end if;
          end if;
 
       end if;

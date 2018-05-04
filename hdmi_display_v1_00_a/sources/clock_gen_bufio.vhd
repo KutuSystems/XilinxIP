@@ -57,14 +57,13 @@ entity clock_gen is
    generic
    (
       -- PLLE2 parameters
-      PLL_MULTIPLY      : real      := 11.875;
-      PLL_DIVIDE        : integer   := 2;
-      CLK_DIVIDE        : integer   := 1
+      REFERENCE_CLOCK      : integer := 125;
+      OUTPUT_PIXEL_RATE    : integer := 148
    );
    port
    (
       reset             : in  std_logic;
-      clk125            : in  std_logic;
+      ref_clk           : in  std_logic;
 
       clk742            : out std_logic;
       clk148            : out std_logic;
@@ -75,6 +74,85 @@ end clock_gen;
 
 architecture RTL of clock_gen is
 
+
+   function funct_calc_mult (
+      in_clk : integer;
+      out_clk : integer
+   ) return real is
+   begin
+      if ((in_clk = 100) and (out_clk = 118)) then
+         return(11.875);
+      elsif ((in_clk = 100) and (out_clk = 148)) then
+         return(37.125);
+      elsif ((in_clk = 100) and (out_clk = 150)) then
+         return(7.5);
+      elsif ((in_clk = 125) and (out_clk = 118)) then
+         return(9.5);
+      elsif ((in_clk = 125) and (out_clk = 148)) then
+         return(11.875);
+      elsif ((in_clk = 125) and (out_clk = 150)) then
+         return(6.0);
+      elsif ((in_clk = 148) and (out_clk = 118)) then
+         return(8.0);
+      elsif ((in_clk = 148) and (out_clk = 148)) then
+         return(5.0);
+      else
+         return(5.0);
+      end if;
+   end function funct_calc_mult;
+
+   function funct_calc_divclk (
+      in_clk : integer;
+      out_clk : integer
+   ) return integer is
+   begin
+      if ((in_clk = 100) and (out_clk = 118)) then
+         return(1);
+      elsif ((in_clk = 100) and (out_clk = 148)) then
+         return(5);
+      elsif ((in_clk = 100) and (out_clk = 150)) then
+         return(1);
+      elsif ((in_clk = 125) and (out_clk = 118)) then
+         return(1);
+      elsif ((in_clk = 125) and (out_clk = 148)) then
+         return(2);
+      elsif ((in_clk = 125) and (out_clk = 150)) then
+         return(1);
+      elsif ((in_clk = 148) and (out_clk = 118)) then
+         return(1);
+      elsif ((in_clk = 148) and (out_clk = 148)) then
+         return(1);
+      else
+         return(1);
+      end if;
+   end function funct_calc_divclk;
+
+   function funct_calc_outclk (
+      in_clk : integer;
+      out_clk : integer
+   ) return integer is
+   begin
+      if ((in_clk = 100) and (out_clk = 118)) then
+         return(2);
+      elsif ((in_clk = 100) and (out_clk = 148)) then
+         return(1);
+      elsif ((in_clk = 100) and (out_clk = 150)) then
+         return(1);
+      elsif ((in_clk = 125) and (out_clk = 118)) then
+         return(2);
+      elsif ((in_clk = 125) and (out_clk = 148)) then
+         return(1);
+      elsif ((in_clk = 125) and (out_clk = 150)) then
+         return(1);
+      elsif ((in_clk = 148) and (out_clk = 118)) then
+         return(2);
+      elsif ((in_clk = 148) and (out_clk = 148)) then
+         return(1);
+      else
+         return(1);
+      end if;
+   end function funct_calc_outclk;
+
    signal clkfb         : std_logic;
    signal bufr_clk      : std_logic;
    signal clk742_buf    : std_logic;
@@ -82,17 +160,21 @@ architecture RTL of clock_gen is
    signal locked_n      : std_logic;
 --   signal do_reg        : std_logic_vector(15 downto 0);
 
+   constant CLKFBOUT_MULT_VAL : real      := funct_calc_mult (REFERENCE_CLOCK,OUTPUT_PIXEL_RATE);
+   constant DIVCLK_DIVIDE_VAL : integer   := funct_calc_divclk (REFERENCE_CLOCK,OUTPUT_PIXEL_RATE);
+   constant OUTCLK_DIVIDE_VAL : integer   := funct_calc_outclk (REFERENCE_CLOCK,OUTPUT_PIXEL_RATE);
+
 begin
 
 MMCME2_BASE_inst : MMCME2_BASE
    generic map (
       BANDWIDTH            => "OPTIMIZED",
-      DIVCLK_DIVIDE        => 2,
-      CLKFBOUT_MULT_F      => 11.875,
+      DIVCLK_DIVIDE        => DIVCLK_DIVIDE_VAL,
+      CLKFBOUT_MULT_F      => CLKFBOUT_MULT_VAL,
       CLKFBOUT_PHASE       => 0.0,
-      CLKIN1_PERIOD        => 8.0,
+      CLKIN1_PERIOD        => 10.0,
       CLKOUT0_DIVIDE_F     => 1.0,
-      CLKOUT1_DIVIDE       => 1,
+      CLKOUT1_DIVIDE       => OUTCLK_DIVIDE_VAL,
       CLKOUT2_DIVIDE       => 1,
       CLKOUT3_DIVIDE       => 1,
       CLKOUT4_DIVIDE       => 1,
@@ -132,7 +214,7 @@ MMCME2_BASE_inst : MMCME2_BASE
       CLKFBOUT  => clkfb,
       CLKFBOUTB => open,
       LOCKED    => pll_locked,
-      CLKIN1    => clk125,
+      CLKIN1    => ref_clk,
       PWRDWN    => '0',
       RST       => reset,
       CLKFBIN   => clkfb
@@ -152,7 +234,7 @@ MMCME2_BASE_inst : MMCME2_BASE
    generic map
    (
       BUFR_DIVIDE => "5",   -- Values: "BYPASS, 1, 2, 3, 4, 5, 6, 7, 8"
-      SIM_DEVICE => "7SERIES"  -- Must be set to "7SERIES"
+      SIM_DEVICE  => "7SERIES"  -- Must be set to "7SERIES"
    )
    port map
    (

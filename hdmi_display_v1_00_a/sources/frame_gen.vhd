@@ -300,7 +300,7 @@ begin
    process (pxl_clk)
    begin
       if rising_edge(pxl_clk) then
-         if video_dv = '1' and vga_active <= '1' then
+         if video_dv = '1' and vga_active = '1' then
             red       <= S_AXIS_TDATA(23 downto 16);
             green     <= S_AXIS_TDATA(15 downto 8);
             blue      <= S_AXIS_TDATA(7 downto 0);

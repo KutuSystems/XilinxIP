@@ -65,14 +65,13 @@ entity hdmi_tx is
    generic
    (
       -- PLLE2 parameters
-      PLL_MULTIPLY      : real      := 11.875;
-      PLL_DIVIDE        : integer   := 2;
-      CLK_DIVIDE        : integer   := 1
+      REFERENCE_CLOCK      : integer := 125;
+      OUTPUT_PIXEL_RATE    : integer := 148
    );
    port
    (
       reset             : in  std_logic;
-      clk125            : in  std_logic;
+      ref_clk           : in  std_logic;
 
       video_clk         : out std_logic;
       locked            : out std_logic;
@@ -129,14 +128,13 @@ begin
    clock_gen_1 : entity hdmi_display_v1_00_a.clock_gen
    generic map
    (
-      PLL_MULTIPLY   => PLL_MULTIPLY,
-      PLL_DIVIDE     => PLL_DIVIDE,
-      CLK_DIVIDE     => CLK_DIVIDE
+      REFERENCE_CLOCK   => REFERENCE_CLOCK,
+      OUTPUT_PIXEL_RATE => OUTPUT_PIXEL_RATE
    )
    port map
    (
       reset    => reset,
-      clk125   => clk125,
+      ref_clk  => ref_clk,
 
       clk742   => PXL_CLK_5X,
       clk148   => PXL_CLK_1X,
@@ -144,9 +142,9 @@ begin
       locked   => pll_locked
    );
 
-   process (clk125)
+   process (ref_clk)
    begin
-      if rising_edge(clk125) then
+      if rising_edge(ref_clk) then
          if reset = '1' then
             reset200   <= '1';
          elsif reset_reg = '1' then

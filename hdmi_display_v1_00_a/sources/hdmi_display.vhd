@@ -84,14 +84,13 @@ entity hdmi_display is
       USR_BLUE             : integer := 0;
 
       -- PLLE2 parameters
-      PLL_MULTIPLY         : real    := 11.875;
-      PLL_DIVIDE           : integer := 2;
-      CLK_DIVIDE           : integer := 1
+      REFERENCE_CLOCK      : integer := 125;
+      OUTPUT_PIXEL_RATE    : integer := 148
    );
    port
    (
       reset                : in std_logic;
-      clk125               : in std_logic;
+      ref_clk              : in std_logic;
 
       -- AXI-Stream port from VDMA
       s_axis_mm2s_aresetn  : in std_logic;
@@ -253,13 +252,12 @@ begin
    hdmi_tx_1 : entity hdmi_display_v1_00_a.hdmi_tx
    generic map
    (
-      PLL_MULTIPLY      => PLL_MULTIPLY,
-      PLL_DIVIDE        => PLL_DIVIDE,
-      CLK_DIVIDE        => CLK_DIVIDE
+      REFERENCE_CLOCK   => REFERENCE_CLOCK,
+      OUTPUT_PIXEL_RATE => OUTPUT_PIXEL_RATE
    )
    port map (
       reset             => reset,
-      clk125            => clk125,
+      ref_clk           => ref_clk,
 
       video_clk         => pxl_clk,
       locked            => locked,
