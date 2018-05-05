@@ -119,7 +119,7 @@ architecture RTL of hdmi_tx is
 
 begin
 
-   video_clk <= clk;
+   video_clk         <= clk;
 
    debug_tmds_red    <= tmds_red;
    debug_tmds_green  <= tmds_green;

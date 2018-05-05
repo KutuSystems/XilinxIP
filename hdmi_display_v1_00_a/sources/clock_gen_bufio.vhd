@@ -155,10 +155,11 @@ architecture RTL of clock_gen is
 
    signal clkfb         : std_logic;
    signal bufr_clk      : std_logic;
+   signal bufg_clk      : std_logic;
    signal clk742_buf    : std_logic;
+   signal clk148_buf    : std_logic;
    signal pll_locked    : std_logic;
    signal locked_n      : std_logic;
---   signal do_reg        : std_logic_vector(15 downto 0);
 
    constant CLKFBOUT_MULT_VAL : real      := funct_calc_mult (REFERENCE_CLOCK,OUTPUT_PIXEL_RATE);
    constant DIVCLK_DIVIDE_VAL : integer   := funct_calc_divclk (REFERENCE_CLOCK,OUTPUT_PIXEL_RATE);
@@ -175,8 +176,8 @@ MMCME2_BASE_inst : MMCME2_BASE
       CLKIN1_PERIOD        => 10.0,
       CLKOUT0_DIVIDE_F     => 1.0,
       CLKOUT1_DIVIDE       => OUTCLK_DIVIDE_VAL,
-      CLKOUT2_DIVIDE       => 1,
-      CLKOUT3_DIVIDE       => 1,
+      CLKOUT2_DIVIDE       => OUTCLK_DIVIDE_VAL*5,
+      CLKOUT3_DIVIDE       => OUTCLK_DIVIDE_VAL*5,
       CLKOUT4_DIVIDE       => 1,
       CLKOUT5_DIVIDE       => 1,
       CLKOUT6_DIVIDE       => 1,
@@ -204,9 +205,9 @@ MMCME2_BASE_inst : MMCME2_BASE
       CLKOUT0B  => open,
       CLKOUT1   => clk742_buf,
       CLKOUT1B  => open,
-      CLKOUT2   => open,
+      CLKOUT2   => clk148_buf,
       CLKOUT2B  => open,
-      CLKOUT3   => open,
+      CLKOUT3   => bufg_clk,
       CLKOUT3B  => open,
       CLKOUT4   => open,
       CLKOUT5   => open,
@@ -233,7 +234,7 @@ MMCME2_BASE_inst : MMCME2_BASE
    BUFR_inst : BUFR
    generic map
    (
-      BUFR_DIVIDE => "5",   -- Values: "BYPASS, 1, 2, 3, 4, 5, 6, 7, 8"
+      BUFR_DIVIDE => "BYPASS",   -- Values: "BYPASS, 1, 2, 3, 4, 5, 6, 7, 8"
       SIM_DEVICE  => "7SERIES"  -- Must be set to "7SERIES"
    )
    port map
@@ -241,10 +242,15 @@ MMCME2_BASE_inst : MMCME2_BASE
       O     => bufr_clk,
       CE    => '1',
       CLR   => locked_n,
-      I     => clk742_buf
+      I     => clk148_buf
    );
-
    clk148 <= bufr_clk;
-   clk    <= bufr_clk;
+
+   BUFG_inst : BUFG
+   port map
+   (
+      O     => clk,
+      I     => bufg_clk
+   );
 
 end RTL;

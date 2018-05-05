@@ -139,6 +139,8 @@ set_property interface_mode master [ipx::get_bus_interfaces HDMI -of_objects [ip
 
 ipx::associate_bus_interfaces -busif HDMI -clock ref_clk [ipx::current_core]
 
+ipx::associate_bus_interfaces -clock ref_clk -reset ref_aresetn [ipx::current_core]
+
 ipx::add_port_map CLK_P [ipx::get_bus_interfaces HDMI -of_objects [ipx::current_core]]
 set_property physical_name HDMI_CLK_P [ipx::get_port_maps CLK_P -of_objects [ipx::get_bus_interfaces HDMI -of_objects [ipx::current_core]]]
 ipx::add_port_map D2_P [ipx::get_bus_interfaces HDMI -of_objects [ipx::current_core]]

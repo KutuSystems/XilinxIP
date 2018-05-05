@@ -91,9 +91,9 @@ entity hdmi_display is
    (
       reset                : in std_logic;
       ref_clk              : in std_logic;
+      ref_aresetn          : in std_logic;
 
       -- AXI-Stream port from VDMA
-      s_axis_mm2s_aresetn  : in std_logic;
       s_axis_mm2s_aclk     : out std_logic;
       s_axis_mm2s_tready   : out std_logic;
       s_axis_mm2s_tdata	   : in std_logic_vector(31 downto 0);
@@ -102,6 +102,7 @@ entity hdmi_display is
       s_axis_mm2s_tvalid   : in std_logic;
 
       -- VDMA Signals
+      dcm_locked           : out std_logic;
       fsync                : out std_logic;
 
       -- HDMI output
@@ -134,7 +135,10 @@ end hdmi_display;
 architecture RTL of hdmi_display is
 
    signal pxl_clk                   : std_logic;
-   signal locked                    : std_logic;
+   signal locked                    : std_logic := '0';
+   signal reset_sig                 : std_logic;
+
+   signal locked_count              : std_logic_vector(4 downto 0) := (others => '0');
 
    signal s_axis_mm2s_aresetn_sig   : std_logic;
    signal s_axis_mm2s_tready_sig    : std_logic;
@@ -143,6 +147,8 @@ architecture RTL of hdmi_display is
    signal s_axis_mm2s_tlast_sig     : std_logic;
    signal s_axis_mm2s_tvalid_sig    : std_logic;
    signal fsync_sig                 : std_logic;
+
+   signal s_axis_mm2s_aresetn_reg   : std_logic;
 
    signal hsync                     : std_logic;
    signal vsync                     : std_logic;
@@ -162,6 +168,21 @@ begin
 
 
    s_axis_mm2s_aclk <= pxl_clk;
+
+
+   process (ref_clk)
+   begin
+      if rising_edge(ref_clk) then
+         s_axis_mm2s_aresetn_reg <= ref_aresetn;
+
+         if locked = '0' then
+            locked_count <= (others => '0');
+         elsif locked_count(4) = '0' then
+            locked_count <= locked_count + 1;
+         end if;
+         dcm_locked <= locked_count(4);
+      end if;
+   end process;
 
    -- Instantiation of display controller
    frame_gen_1 : entity hdmi_display_v1_00_a.frame_gen
@@ -185,7 +206,7 @@ begin
    port map (
       reset             => reset,
       pxl_clk           => pxl_clk,
-      locked            => locked,
+      locked            => locked_count(4),
 
       -- Ports of Axi Slave Bus Interface S_AXIS_MM2S
       s_axis_aresetn    => s_axis_mm2s_aresetn_sig,
@@ -220,7 +241,7 @@ begin
       )
       port map
       (
-         reset                => reset,
+         reset                => reset_sig,
          fsync                => fsync_sig,
 
          -- simulating AXI-Stream port from VDMA
@@ -235,11 +256,12 @@ begin
 
       s_axis_mm2s_tready   <= '0';
       fsync                <= '0';
+      reset_sig            <= not s_axis_mm2s_aresetn_reg;
 
    end generate;
 
    DISABLE_TEST : if USE_TEST_PATTERN = 0 generate
-      s_axis_mm2s_aresetn_sig <= s_axis_mm2s_aresetn;
+      s_axis_mm2s_aresetn_sig <= s_axis_mm2s_aresetn_reg;
       s_axis_mm2s_tready      <= s_axis_mm2s_tready_sig;
       s_axis_mm2s_tdata_sig   <= s_axis_mm2s_tdata;
       s_axis_mm2s_tkeep_sig   <= s_axis_mm2s_tkeep;
